@@ -1,0 +1,2 @@
+rosbuild_add_executable(controller_test controller_test.cpp)
+target_link_libraries(controller_test controllers)

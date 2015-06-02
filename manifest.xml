@@ -1,0 +1,16 @@
+<package>
+  <description brief="expressiongraph_wbf">
+
+     expressiongraph_wbf
+
+  </description>
+  <author>apertuscus</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/expressiongraph_wbf</url>
+  <depend package="expressiongraph"/>
+  <depend package="roscpp"/>
+
+</package>
+
+
