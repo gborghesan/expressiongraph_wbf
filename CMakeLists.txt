@@ -17,13 +17,17 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_add_library(matlab_reporter
   src/utils/matlab_reporter.cpp)
+  
 rosbuild_add_library(controllers
   src/controllers/position_controller.cpp
+  src/controllers/direct_controller.cpp
   src/controllers/rotation_controller.cpp
   src/controllers/position_ff_controller.cpp  
-  src/controllers/position_deadzone_controller.cpp )  
+  src/controllers/position_deadzone_controller.cpp)  
+  
 rosbuild_add_library(space_description
   src/solver/space_description.cpp)  
+  
 rosbuild_add_library(simple_force_solver
   src/solver/simple_force_solver.cpp) 
    
