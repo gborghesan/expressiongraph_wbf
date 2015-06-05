@@ -36,13 +36,13 @@ namespace wbf {
 		 if (res.size()!=size_of_output) return false;
 		 double x=p_meas->value();
 		 double l_bound=lower_bound->value();
-		 double u_bound=lower_bound->value();
+		 double u_bound=upper_bound->value();
 		 if(l_bound>u_bound) return false;
 		 double k=K->value();
 
 		 if (x<l_bound)
 			 res[0]=(l_bound-x)*k;
-		 else if(x>l_bound)
+		 else if(x>u_bound)
 			 res[0]=(u_bound-x)*k;
 		 else
 			 res[0]=0;
