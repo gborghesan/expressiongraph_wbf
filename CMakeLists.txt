@@ -20,7 +20,8 @@ rosbuild_add_library(matlab_reporter
 rosbuild_add_library(controllers
   src/controllers/position_controller.cpp
   src/controllers/rotation_controller.cpp
-  src/controllers/position_ff_controller.cpp  )  
+  src/controllers/position_ff_controller.cpp  
+  src/controllers/position_deadzone_controller.cpp )  
 rosbuild_add_library(space_description
   src/solver/space_description.cpp)  
 rosbuild_add_library(simple_force_solver
