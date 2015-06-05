@@ -13,8 +13,17 @@ protected:
 public:
 
 	typedef boost::shared_ptr<controller> Ptr;
-
-	virtual void update_expressions(std::vector<double>)=0;
+/*
+ * this function is meant for updating the value of measuring equation
+ * in function of joint angles
+ */
+	virtual void update_expressions(const std::vector<double>&,
+			const std::vector<int>& q_index)=0;
+	/*
+	 * this function is meant for updating the value of desired values
+	 * that are expressed as a function of time
+	 */
+	virtual void update_time(double time, int time_index)=0;
 	virtual bool compute_action(Eigen::VectorXd&)=0;
 	virtual ~controller(){};
 	int output_size(){return size_of_output;}

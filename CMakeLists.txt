@@ -16,13 +16,22 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_add_library(matlab_reporter
-  src/utils/matlab_reporter.cpp
-  )
-   rosbuild_add_library(controllers
-  src/controllers/prop_controller.cpp
-  )  
-  target_link_libraries(controllers expressiongraph)
+  src/utils/matlab_reporter.cpp)
+rosbuild_add_library(controllers
+  src/controllers/position_controller.cpp
+  src/controllers/rotation_controller.cpp
+  src/controllers/position_ff_controller.cpp  )  
+rosbuild_add_library(space_description
+  src/solver/space_description.cpp)  
+rosbuild_add_library(simple_force_solver
+  src/solver/simple_force_solver.cpp) 
+   
 target_link_libraries(matlab_reporter expressiongraph)
+target_link_libraries(controllers expressiongraph)
+target_link_libraries(space_description expressiongraph)
+target_link_libraries(simple_force_solver expressiongraph controllers space_description)
+
+
 
 
 ADD_SUBDIRECTORY(tests)

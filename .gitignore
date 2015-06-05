@@ -1,0 +1,6 @@
+.cproject
+.project
+.pydevproject
+bin/*
+build/*
+lib/*
