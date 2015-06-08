@@ -1,3 +1,5 @@
+file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/tests)
+
 rosbuild_add_executable(tests/controller_test controller_test.cpp)
 target_link_libraries(tests/controller_test controllers)
 

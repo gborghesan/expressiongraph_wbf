@@ -44,9 +44,9 @@ int main()
 	Jsolver.JntToJac(jointpositions,JKDL);
 
 	//robot in expression
-Expression<Vector>::Ptr L      = Constant(Vector(0,0,0.2));
-Expression<Vector>::Ptr L0=  Constant(Vector(0,0,0.0));
-Expression<Rotation>::Ptr R0=  Constant(Rotation(KDL::Rotation::Identity()));
+	Expression<Vector>::Ptr L      = Constant(Vector(0,0,0.2));
+	Expression<Vector>::Ptr L0=  Constant(Vector(0,0,0.0));
+	Expression<Rotation>::Ptr R0=  Constant(Rotation(KDL::Rotation::Identity()));
 	Expression<Frame>::Ptr w_T_l1  =       frame( rot_z(input(1)), L0)*frame( R0, L);
 	Expression<Frame>::Ptr w_T_l2 = w_T_l1*frame( rot_x(input(2)), L0)*frame( R0, L);
 	Expression<Frame>::Ptr w_T_l3 = w_T_l2*frame( rot_z(input(3)), L0)*frame( R0, L);
