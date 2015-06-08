@@ -11,6 +11,15 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
 rosbuild_init()
 
+
+execute_process(COMMAND svn co https://projects.coin-or.org/svn/qpOASES/stable/3.0 ${PROJECT_SOURCE_DIR}/external/qpOASES)
+
+# external libraries:
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/external/qpOASES/include)
+add_definitions( -D__NO_COPYRIGHT__ )
+ADD_SUBDIRECTORY( external )
+
+
 #set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
@@ -31,10 +40,16 @@ rosbuild_add_library(space_description
 rosbuild_add_library(simple_force_solver
   src/solver/simple_force_solver.cpp) 
    
+ rosbuild_add_library(velocity_solver
+  src/solver/velocity_solver.cpp)   
+   
 target_link_libraries(matlab_reporter expressiongraph)
 target_link_libraries(controllers expressiongraph)
 target_link_libraries(space_description expressiongraph)
 target_link_libraries(simple_force_solver expressiongraph controllers space_description)
+target_link_libraries(velocity_solver 
+  expressiongraph qpOASES
+  controllers space_description)
 
 
 
