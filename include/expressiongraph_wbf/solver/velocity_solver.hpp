@@ -25,6 +25,7 @@ private:
 	Eigen::VectorXd lambda1,lambda3,lambda6;
 
 
+
 	qpOASES::SQProblem  QP;                 ///< QP Solver
 
 	bool prepared;
