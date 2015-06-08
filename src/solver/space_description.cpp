@@ -57,6 +57,8 @@ rot_space::rot_space(Expression<Rotation>::Ptr _space_output,
 		break;
 	}
 
+	if (!base_frame)
+			type=type+"_own";
 }
 void rot_space::update_expressions(const std::vector<double>&q,
 		const std::vector<int> & q_index)
@@ -104,7 +106,7 @@ bool rot_space::compute_jacobian(Eigen::MatrixXd& J_partial,
 	return true;
 }
 
-//ROTATIONAL SPACE
+//VECTOR SPACE
 pos_space::pos_space(Expression<Vector>::Ptr _space_output,
 		which_position_type _which_direction,
 		Expression<Rotation>::Ptr _new_base)
@@ -130,6 +132,8 @@ pos_space::pos_space(Expression<Vector>::Ptr _space_output,
 		size_of_output=1;
 		break;
 	}
+	if (_new_base)
+		type=type+"_own";
 
 }
 void pos_space::update_expressions(const std::vector<double>&q,
