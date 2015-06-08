@@ -16,12 +16,14 @@ simple_force_solver::simple_force_solver(
 	lambda1.resize(1);
 	lambda3.resize(3);
 	lambda6.resize(6);
+	n_of_joints=-1;n_of_output=-1;
 };
 simple_force_solver::simple_force_solver(){
 	prepared=false;
 	lambda1.resize(1);
 	lambda3.resize(3);
 	lambda6.resize(6);
+	n_of_joints=-1;n_of_output=-1;time_index=-1;
 };
 void simple_force_solver::setJointIndex(const std::vector<int>&_joint_indexes){
 	joint_indexes=_joint_indexes;
