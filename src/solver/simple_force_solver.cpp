@@ -104,11 +104,37 @@ int simple_force_solver::Compute(const std::vector<double> &q_in, double time,
 			lambda_des(i)=lambda1(0);
 			i++;
 			break;
-	/*	case 3:
-	 i=i+3;
+		case 3:
+			if(!it->second->space->compute_jacobian(J3,joint_indexes))
+					return -34;
+				if(!it->second->ctrl->compute_action(lambda3))
+					return -35;
+				J.row(i)=J3.row(0);
+				J.row(i+1)=J3.row(1);
+				J.row(i+2)=J3.row(2);
+				lambda_des(i)=lambda3(0);
+				lambda_des(i+1)=lambda3(1);
+				lambda_des(i+2)=lambda3(2);
+				i=i+3;
 			break;
-		case 6:
-			break;*/
+			if(!it->second->space->compute_jacobian(J6,joint_indexes))
+					return -64;
+				if(!it->second->ctrl->compute_action(lambda6))
+					return -65;
+				J.row(i)=J6.row(0);
+				J.row(i+1)=J6.row(1);
+				J.row(i+2)=J6.row(2);
+				J.row(i+3)=J6.row(3);
+				J.row(i+4)=J6.row(4);
+				J.row(i+5)=J6.row(5);
+				lambda_des(i)=lambda6(0);
+				lambda_des(i+1)=lambda6(1);
+				lambda_des(i+2)=lambda6(2);
+				lambda_des(i+3)=lambda6(3);
+				lambda_des(i+4)=lambda6(4);
+				lambda_des(i+5)=lambda6(5);
+				i=i+6;
+				break;
 		default:
 			return -100;//size of output not yet implemented
 			break;
