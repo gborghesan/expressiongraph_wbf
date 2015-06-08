@@ -97,7 +97,7 @@ Expression<Rotation>::Ptr R0=  Constant(Rotation(KDL::Rotation::Identity()));
 	Eigen::MatrixXd J2(3,4);
 	space_des_rot->compute_jacobian(J2,joint_indexes);
 	std::cout<<"Jacobian Rotation:\n"<<J2<<std::endl;
-	std::cout<<"======TEST ON ROTATION SIGLE DIRCTIONS========:\n"<<std::endl;
+	std::cout<<"======TEST ON ROTATION SIGLE DIRECTIONS========:\n"<<std::endl;
 	space_description::Ptr space_des_rot_X(new rot_space(w_R_ee,ROT_X));
 	space_description::Ptr space_des_rot_Y(new rot_space(w_R_ee,ROT_Y));
 	space_description::Ptr space_des_rot_Z(new rot_space(w_R_ee,ROT_Z));
@@ -111,4 +111,24 @@ Expression<Rotation>::Ptr R0=  Constant(Rotation(KDL::Rotation::Identity()));
 	space_des_rot_Z->compute_jacobian(J,joint_indexes);
 	std::cout<<"Jacobian Rotation Z:\n"<<J<<std::endl;
 
+	std::cout<<"======TEST ON POSITION (in base frame)========:\n"<<std::endl;
+	space_description::Ptr space_pos(new pos_space(origin( (w_T_ee))));
+	space_pos->update_expressions(inp,joint_indexes);
+	space_pos->compute_jacobian(J2,joint_indexes);
+	std::cout<<"Jacobian POSITION:\n"<<J2<<std::endl;
+
+
+	std::cout<<"======TEST ON EE_FRAME========:\n"<<std::endl;
+
+	space_description::Ptr space_pos_own(new pos_space(origin( (w_T_ee)),FULL_POSITION,w_R_ee));
+	space_pos_own->update_expressions(inp,joint_indexes);
+	space_pos_own->compute_jacobian(J2,joint_indexes);
+	std::cout<<"Jacobian POSITION:\n"<<J2<<std::endl;
+
+	space_description::Ptr space_des_rot_own(new rot_space(w_R_ee,FULL_ROTATION,false));
+	space_des_rot_own->update_expressions(inp,joint_indexes);
+	space_des_rot_own->compute_jacobian(J2,joint_indexes);
+	std::cout<<"Jacobian Rotation_in_own:\n"<<J2<<std::endl;
+	JKDL.changeBase(cartpos.M);
+	cout<<"Expected Full Jacobian\n" <<JKDL.data<<endl;
 }

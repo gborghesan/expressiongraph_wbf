@@ -6,7 +6,8 @@ namespace wbf {
 /*this controller is the most simple, as it
  * simple impose the desired value
  * (generalised force in force resolved schemes)
- * to the given direction*/
+ * to the given direction
+ * */
 class direct_controller:public controller
 {
 private:

@@ -33,10 +33,11 @@ bool scalar_space::compute_jacobian(Eigen::MatrixXd& J_partial,
 }
 //ROTATIONAL SPACE
 rot_space::rot_space(Expression<Rotation>::Ptr _space_output,
-		which_direction_type _which_direction)
+		which_direction_type _which_direction,bool _base_frame)
 {
 	which_direction=_which_direction;
 	space_output=_space_output;
+	base_frame=_base_frame;
 	switch (which_direction) {
 	case FULL_ROTATION:
 		type="Rot";
@@ -70,12 +71,17 @@ bool rot_space::compute_jacobian(Eigen::MatrixXd& J_partial,
 	if (J_partial.cols()!=i_of_v.size()) return false;
 
 	//force update by calling value;
-	space_output->value();
+	KDL::Rotation R=space_output->value();
 
 	//computing the jacobian
 	for(unsigned int i=0;i<i_of_v.size();i++)
 	{
 		KDL::Vector omega=space_output->derivative(i_of_v[i]);
+		if (!base_frame){
+			//apply rotation to J to express in current space
+			omega=R*omega;
+		}
+
 		switch (which_direction)
 		{
 		case FULL_ROTATION:
@@ -97,5 +103,87 @@ bool rot_space::compute_jacobian(Eigen::MatrixXd& J_partial,
 	//std::cout<<"x:\t"<<x<<"\txd:\t"<<xd<<"\tk:\t"<<k<<"\nres:\t"<<res[0]<<std::endl;
 	return true;
 }
+
+//ROTATIONAL SPACE
+pos_space::pos_space(Expression<Vector>::Ptr _space_output,
+		which_position_type _which_direction,
+		Expression<Rotation>::Ptr _new_base)
+{
+	which_direction=_which_direction;
+	space_output=_space_output;
+	new_base=_new_base;
+	switch (which_direction) {
+	case FULL_POSITION:
+		type="Pos";
+		size_of_output=3;
+		break;
+	case POS_X:
+		type="PosX";
+		size_of_output=1;
+		break;
+	case POS_Y:
+		type="PosY";
+		size_of_output=1;
+		break;
+	case POS_Z:
+		type="PosZ";
+		size_of_output=1;
+		break;
+	}
+
+}
+void pos_space::update_expressions(const std::vector<double>&q,
+		const std::vector<int> & q_index)
+{
+	space_output->setInputValues(q_index,q);
+	if(new_base)
+		new_base->setInputValues(q_index,q);
+	//std::cout<<"OK"<<std::endl;
+}
+bool pos_space::compute_jacobian(Eigen::MatrixXd& J_partial,
+		const std::vector<int> i_of_v)
+{
+	if (J_partial.rows()!=size_of_output) return false;
+	if (J_partial.cols()!=i_of_v.size()) return false;
+
+	//force update by calling value;
+
+	space_output->value();
+	KDL::Rotation R;
+	if(new_base)
+		R=new_base->value();
+
+	//computing the jacobian
+	for(unsigned int i=0;i<i_of_v.size();i++)
+	{
+		KDL::Vector v_part=space_output->derivative(i_of_v[i]);
+
+		if (new_base){
+			//apply rotation to J to express in current space
+			v_part=R*v_part;
+		}
+
+		switch (which_direction)
+		{
+		case FULL_POSITION:
+			J_partial(0,i)=v_part.x();
+			J_partial(1,i)=v_part.y();
+			J_partial(2,i)=v_part.z();
+			break;
+		case POS_X:
+			J_partial(0,i)=v_part.x();
+			break;
+		case POS_Y:
+			J_partial(0,i)=v_part.y();
+			break;
+		case POS_Z:
+			J_partial(0,i)=v_part.z();
+			break;
+		}
+	}
+	//std::cout<<"x:\t"<<x<<"\txd:\t"<<xd<<"\tk:\t"<<k<<"\nres:\t"<<res[0]<<std::endl;
+	return true;
+}
+
 
 };
