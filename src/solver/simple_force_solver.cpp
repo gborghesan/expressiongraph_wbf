@@ -109,18 +109,27 @@ int simple_force_solver::Compute(const std::vector<double> &q_in, double time,
 					return -34;
 				if(!it->second->ctrl->compute_action(lambda3))
 					return -35;
-				J.row(i)=J3.row(0);
+		/*		J.row(i)=J3.row(0);
 				J.row(i+1)=J3.row(1);
 				J.row(i+2)=J3.row(2);
 				lambda_des(i)=lambda3(0);
 				lambda_des(i+1)=lambda3(1);
-				lambda_des(i+2)=lambda3(2);
+				lambda_des(i+2)=lambda3(2);*/
+		//		cout<<"J before\n"<<J<<endl;
+		//		cout<<"J3 \n"<<J3<<endl;
+				J.block(0,i,3,n_of_joints)=J3;
+		//		cout<<"J after\n"<<J<<endl;
+		//		cout<<"lambda_des before\n"<<lambda_des.transpose()<<endl;
+		//		cout<<"lambda3 \n"<<lambda3.transpose()<<endl;
+				lambda_des.block(i,0,3,1)=lambda3;
+		//		cout<<"lambda_des after\n"<<lambda_des.transpose()	<<endl;
 				i=i+3;
 			break;
 			if(!it->second->space->compute_jacobian(J6,joint_indexes))
 					return -64;
 				if(!it->second->ctrl->compute_action(lambda6))
 					return -65;
+				/*
 				J.row(i)=J6.row(0);
 				J.row(i+1)=J6.row(1);
 				J.row(i+2)=J6.row(2);
@@ -132,13 +141,17 @@ int simple_force_solver::Compute(const std::vector<double> &q_in, double time,
 				lambda_des(i+2)=lambda6(2);
 				lambda_des(i+3)=lambda6(3);
 				lambda_des(i+4)=lambda6(4);
-				lambda_des(i+5)=lambda6(5);
+				lambda_des(i+5)=lambda6(5);*/
+				J.block(0,i,6,n_of_joints)=J6;
+				lambda_des.block(i,0,6,1)=lambda6;
 				i=i+6;
 				break;
 		default:
 			return -100;//size of output not yet implemented
 			break;
 		}
+		//cout<<"J total\n"<<J<<endl;
+		//cout<<"lambda_des total\n"<<lambda_des.transpose()<<endl;
 		Jt=J.transpose();
 		tau_out=Jt*lambda_des;
 

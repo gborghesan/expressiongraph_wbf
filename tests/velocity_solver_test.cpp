@@ -24,26 +24,7 @@ int main()
 	q[2] = -0.5;
 	q[3] = 2;
 
-	KDL::Chain chain;
-	KDL::Vector L2(0,0,0.2);
-	chain.addSegment(Segment(Joint(Joint::RotZ),Frame(L2)));
-	chain.addSegment(Segment(Joint(Joint::RotX),Frame(L2)));
-	chain.addSegment(Segment(Joint(Joint::RotZ),Frame(L2)));
-	chain.addSegment(Segment(Joint(Joint::RotZ),Frame(L2)));
-	ChainFkSolverPos_recursive fksolver = ChainFkSolverPos_recursive(chain);
- 	ChainJntToJacSolver Jsolver = ChainJntToJacSolver(chain);
-	unsigned int nj = chain.getNrOfJoints();
-	KDL::JntArray jointpositions = JntArray(nj);
-	for(unsigned int i=0;i<nj;i++)
-		jointpositions(i)=q[i];
 
-	KDL::Frame cartpos;
-	KDL::Jacobian JKDL(nj);
-
-	// Calculate forward position kinematics
-
-	fksolver.JntToCart(jointpositions,cartpos);
-	Jsolver.JntToJac(jointpositions,JKDL);
 
 
 
@@ -57,7 +38,7 @@ int main()
 	Expression<Rotation>::Ptr R0=  Constant(Rotation(KDL::Rotation::Identity()));
 	Expression<Frame>::Ptr w_T_l1  =       frame( rot_z(input(1)), L0)*frame( R0, L);
 	Expression<Frame>::Ptr w_T_l2 = w_T_l1*frame( rot_x(input(2)), L0)*frame( R0, L);
-	Expression<Frame>::Ptr w_T_l3 = w_T_l2*frame( rot_z(input(3)), L0)*frame( R0, L);
+	Expression<Frame>::Ptr w_T_l3 = w_T_l2*frame( rot_x(input(3)), L0)*frame( R0, L);
 	Expression<Frame>::Ptr w_T_ee = w_T_l3*frame( rot_z(input(4)), L0)*frame( R0, L);
 	//Expression<Frame>::Ptr w_T_ee = w_T_l4*frame( Constant(Rotation::Identity()), L);
 
@@ -73,7 +54,7 @@ int main()
 	joint_indexes[3]=4;
 
 	w_T_ee->setInputValues(joint_indexes,q);
-	KDL::Frame Te=w_T_ee->value();
+
 
 	//cout<<"Expression w_T_ee\n" <<Te<<endl;
 
@@ -84,11 +65,11 @@ int main()
 	int time_index=0;
 	ndx.push_back(time_index);//index of time
 	scalar_des = Variable<double>(ndx);
-	scalar_des->setValue(0.0);//value of set-point
-	scalar_des->setJacobian(time_index,0.3);//used for feed-forward
+	scalar_des->setValue(0.2);//value of set-point
+	scalar_des->setJacobian(time_index,0.0);//used for feed-forward
 
-//build  constraints
-	const double K=100;
+	//build  constraints
+	const double K=1;
 	space_description::Ptr space_x(new scalar_space(w_x_ee));
 	space_description::Ptr space_y(new scalar_space(w_y_ee));
 	space_description::Ptr space_z(new scalar_space(w_z_ee));
@@ -98,12 +79,12 @@ int main()
 	controller::Ptr ctrl_y(new position_controller(w_y_ee,scalar_des,gain));
 	controller::Ptr ctrl_z(new position_controller(w_z_ee,scalar_des,gain));
 
-	constraint::Ptr c_x(new constraint (space_x,ctrl_x));
-	constraint::Ptr c_y(new constraint (space_y,ctrl_y));
-	constraint::Ptr c_z(new constraint (space_z,ctrl_z));
+	constraint::Ptr c_x(new constraint (space_x,ctrl_x,ctrl_x));
+	constraint::Ptr c_y(new constraint (space_y,ctrl_y,ctrl_y));
+	constraint::Ptr c_z(new constraint (space_z,ctrl_z,ctrl_z));
 
-
-
+	c_x->weight=input(time_index);
+	//c_x->weight=Constant(0.12);
 
 	//external inputs (setpoints)
 
@@ -112,26 +93,53 @@ int main()
 
 
 
-	std::cout<<"\n======Expected values========:"<<endl;
-	cout<<"w_p_ee\n" <<cartpos.p<<endl;
-
-	Eigen::VectorXd wrench(6);
-	wrench(0)=-cartpos.p.x()*K;
-	wrench(1)=-cartpos.p.y()*K;
-	wrench(2)=-cartpos.p.z()*K;
-	wrench(3)=wrench(4)=wrench(5)=0;
-	cout<<"desired wrench\n" <<wrench.transpose()<<endl;
-	Eigen::VectorXd tau(4);
-	tau=JKDL.data.transpose()*wrench;
-	cout<<"expected tau\n" <<tau.transpose()<<endl;
-
 	std::cout<<"\n======TEST ON CONTROLLER 3 DOF (Without time-variant trajectories) ========:"<<endl;
 
-	Eigen::VectorXd tau_out(4);
+	Eigen::VectorXd qdot_out(4);
 	//build solver, without time derivative support
-	velocity_solver::Ptr s(new velocity_solver(joint_indexes));
-	/*s->addConstraint("pos_x",c_x);
-	s->addConstraint("pos_y",c_y);
+	velocity_solver::Ptr s(new velocity_solver(joint_indexes,time_index));
+	Eigen::VectorXd qdot_w(4);
+	qdot_w<<1,2,3,4;
+	s->setQweights(qdot_w);
+	cout <<"ADD CONST:"<<s->addConstraint("pos_x",c_x)<<endl;
+	cout <<"ADD CONST:"<<s->addConstraint("pos_y",c_y)<<endl;
+	cout <<"ADD CONST:"<<s->addConstraint("pos_z",c_z)<<endl;
+	cout <<"PREPARE:"<<s->Prepare()<<endl;
+
+	int count=1;
+	for (int i=0;i<1001;i++)
+	{
+		//cout <<"COMPUTE:"<<s->Compute(q,qdot_out)<<endl;
+		s->Compute(q,i,qdot_out);
+		for (unsigned int j=0;j<q.size();j++)
+			q[j]=q[j]+qdot_out(j)*0.01;
+		count--;
+		if (count==0)
+		{
+			count=100;
+		cout <<"POSE:"<<origin(w_T_ee)->value()<<endl;
+		}
+	}
+	std::cout<<"\n expected value [0.2 0.2 0.2]"<<endl;
+
+	cout <<"REM CONST:"<<s->RemoveConstraint("pos_z")<<endl;
+	scalar_des->setValue(0.3);//value of set-point
+	s->Prepare();
+	for (int i=0;i<1001;i++)
+	{
+		//cout <<"COMPUTE:"<<s->Compute(q,qdot_out)<<endl;
+		s->Compute(q,i,qdot_out);
+		for (unsigned int j=0;j<q.size();j++)
+			q[j]=q[j]+qdot_out(j)*0.01;
+		count--;
+		if (count==0)
+		{
+			count=100;
+			cout <<"POSE:"<<origin(w_T_ee)->value()<<endl;
+		}
+	}
+	std::cout<<"\n expected value [0.3 0.3 ?]"<<endl;
+	/*s->addConstraint("pos_y",c_y);
 	s->addConstraint("pos_z",c_z);
 	s->Prepare();
 	int res=s->Compute(q,tau_out);
@@ -149,6 +157,6 @@ int main()
 	std::cout<<"\n======CALL COMPUTE AFTER PREPARE ========:"<<endl;
 	std::cout<< "prepare returned: "<<s->Prepare()<<endl;
 	std::cout<< "compute returned: "<<s->Compute(q,tau_out)<<endl;
-*/
+	 */
 
 }

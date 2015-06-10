@@ -1,7 +1,7 @@
 #include "expressiongraph_wbf/solver/simple_force_solver.hpp"
 
 #include "expressiongraph_wbf/controllers/position_controller.hpp"
-
+#include "expressiongraph_wbf/controllers/rotation_controller.hpp"
 
 #include <kdl/chain.hpp>
 #include <kdl/chainfksolver.hpp>
@@ -93,15 +93,20 @@ int main()
 	space_description::Ptr space_y(new scalar_space(w_y_ee));
 	space_description::Ptr space_z(new scalar_space(w_z_ee));
 
+	space_description::Ptr space_R(new rot_space(w_R_ee));
+
 	Expression<double>::Ptr gain=Constant(K);
 	controller::Ptr ctrl_x(new position_controller(w_x_ee,scalar_des,gain));
 	controller::Ptr ctrl_y(new position_controller(w_y_ee,scalar_des,gain));
 	controller::Ptr ctrl_z(new position_controller(w_z_ee,scalar_des,gain));
 
+	controller::Ptr ctrl_R(new rotation_controller(w_R_ee,Constant(Rotation::Identity()),gain));
+
 	constraint::Ptr c_x(new constraint (space_x,ctrl_x));
 	constraint::Ptr c_y(new constraint (space_y,ctrl_y));
 	constraint::Ptr c_z(new constraint (space_z,ctrl_z));
 
+	constraint::Ptr c_R(new constraint (space_R,ctrl_R));
 
 
 
@@ -133,6 +138,7 @@ int main()
 	s->addConstraint("pos_x",c_x);
 	s->addConstraint("pos_y",c_y);
 	s->addConstraint("pos_z",c_z);
+	s->addConstraint("pos_R",c_R);
 	s->Prepare();
 	int res=s->Compute(q,tau_out);
 
