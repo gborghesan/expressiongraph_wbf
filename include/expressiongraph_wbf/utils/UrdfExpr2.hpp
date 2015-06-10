@@ -44,6 +44,24 @@ struct link_property {
     double Izz;
     Frame  origin;
 };
+    struct joint_property {
+	joint_property() {
+            name="";
+            max_vel=0;
+            max_pos=0;
+            min_pos=0;
+            max_effort=0;
+            j_type=urdf::Joint::UNKNOWN;
+        }
+        std::string name;
+        int j_type;
+        double max_vel;
+        double max_pos;
+        double min_pos;
+        double max_effort;
+
+
+    };
 
 class UrdfExpressions2 {
 public:
@@ -64,11 +82,12 @@ public:
 
 
     std::map<std::string, unsigned int> joint_map;
-
-
+    std::vector<joint_property> j_props;
+    std::vector<link_property> l_props;
     bool readFromFile( const std::string& filename );
     bool readFromString(const std::string& xml_string);
 
+    bool names_set;
     void hash_names( const boost::shared_ptr<urdf::Link>&  link, int level=0);
     KDL::Vector toKdl(urdf::Vector3 v) ;
     KDL::Rotation toKdl(urdf::Rotation r);

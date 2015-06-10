@@ -25,13 +25,15 @@ int main()
 
 	u.readFromFile("urdf/lwr.urdf");
 
+	std::cout << " FINAL root Link: " << u.root_link->name << " has " << u.root_link->child_links.size() << " child(ren)" << std::endl;
+
 	std::vector<string> names;
 	cout<<"+++++ get names ++++++"<<endl;
 	u.getAllJointNames(names);
 	for (std::vector<string>::iterator it=names.begin();it!=names.end();it++)
 		cout<<"\t"<<*it<<endl;
 	cout<<"+++++ auto generate map ++++++"<<endl;
-	u.generateJointMap();
+	u.generateJointMap(1);//start to generate from index 1, index zero is left empty
 	for (std::map<string,unsigned int>::iterator it=u.joint_map.begin();it!=u.joint_map.end();it++)
 		cout<<"\t"<<it->first<<"\t"<<it->second<<endl;
 
@@ -42,7 +44,7 @@ int main()
 	cout<<"+++++ get expression ++++++"<<endl;
 	Expression<Frame>::Ptr T=u.getExpression(0);
 	Expression<Frame>::Ptr T2=u.getExpression(1);
-	cout<<T<<endl;
+
 	//Expression<Frame>::Ptr T=u.compose_tree(u.root_link,u.rootlist[1]);
 	//cout<<T<<endl;
 	std::ofstream of("urdf_test_total.dot");
@@ -50,4 +52,28 @@ int main()
 	T->write_dotfile(of);
 	T2->write_dotfile(of2);
 	of.close();of2.close();
+	cout<<"+++++ join properties ++++++"<<endl;
+	for (int i=0;i<u.j_props.size();i++)
+	{
+		cout<<"name\t"<<u.j_props[i].name<<endl;
+		cout<<"\ttype\t"<<u.j_props[i].j_type<<endl;
+		cout<<"\tmin pos\t"<<u.j_props[i].min_pos<<endl;
+		cout<<"\tmax pos\t"<<u.j_props[i].max_pos<<endl;
+		cout<<"\tmax vel\t"<<u.j_props[i].max_vel<<endl;
+		cout<<"\tmax eff\t"<<u.j_props[i].max_effort<<endl;
+		cout<<endl;
+	}
+	std::vector<link_property> l_props=u.l_props;
+
+	cout<<"+++++ link properties ++++++"<<endl;
+	for (int i=0;i<l_props.size();i++)
+		{
+			cout<<"name\t"<<l_props[i].name<<endl;
+			cout<<"\tmass\t"<<l_props[i].mass<<endl;
+
+					cout<<endl;
+		}
+	/*system ("dot -Tpdf urdf_test_total.dot -o urdf_test_total.pdf");
+	system ("evince urdf_test_total.pdf");*/
+
 }

@@ -42,17 +42,19 @@ bool UrdfExpressions2::readFromString(const std::string& xml_string) {
 	using namespace urdf;
 	boost::shared_ptr<ModelInterface> robot = parseURDF(xml_string);
 	if (!robot){
-		std::cout << "ERROR: Model Parsing the xml failed: " << std::endl;
+		std::cerr << "ERROR: Model Parsing the xml failed: " << std::endl;
 		return false;
 	}
-	std::cout << "robot name is: " << robot->getName() << std::endl;
+	//std::cout << "robot name is: " << robot->getName() << std::endl;
 	// get info from parser
-	std::cout << "---------- Successfully Parsed XML ---------------" << std::endl;
+	//std::cout << "---------- Successfully Parsed XML ---------------" << std::endl;
 	// get root link
 	root_link=robot->root_link_;
 	if (!root_link) return false;
-	std::cout << "root Link: " << root_link->name << " has " << root_link->child_links.size() << " child(ren)" << std::endl;
+	//std::cout << "root Link: " << root_link->name << " has " << root_link->child_links.size() << " child(ren)" << std::endl;
 	hash_names(root_link);
+	getAllLinkProperties(l_props,root_link);
+
 	return true;
 }
 
@@ -63,9 +65,9 @@ void UrdfExpressions2::hash_names( const boost::shared_ptr<urdf::Link>& link, in
 	for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++) {
 		if (*child) {
 			// indent:
-			 for(int j=0;j<level;j++) std::cout << "\t";
+			// for(int j=0;j<level;j++) std::cout << "\t";
 			// debug output:
-			 std::cout << "child(" << (*child)->name <<  ")" << std::endl;
+			// std::cout << "child(" << (*child)->name <<  ")" << std::endl;
 			hash_names(*child,level+1);
 		} else {
 			std::cerr << "root link: " << link->name << " has a null child!" << *child << std::endl;
@@ -74,18 +76,30 @@ void UrdfExpressions2::hash_names( const boost::shared_ptr<urdf::Link>& link, in
 }
 
 void UrdfExpressions2::addJoint(const boost::shared_ptr<urdf::Link>& link, std::vector<std::string>& names){
-    using namespace std;
-    // add joint:
-    if ((link->parent_joint)  &&
-        ( (link->parent_joint->type == urdf::Joint::PRISMATIC) ||
-          (link->parent_joint->type == urdf::Joint::CONTINUOUS) ||
-          (link->parent_joint->type == urdf::Joint::REVOLUTE)
-        )
-       )
-    {
-        names.push_back(link->parent_joint->name);
-        //std::cout << "joint name : " << link->parent_joint->name << endl;
-    }
+	using namespace std;
+	// add joint:
+	if ((link->parent_joint)  &&
+			( (link->parent_joint->type == urdf::Joint::PRISMATIC) ||
+					(link->parent_joint->type == urdf::Joint::CONTINUOUS) ||
+					(link->parent_joint->type == urdf::Joint::REVOLUTE)
+			)
+	)
+	{
+
+		names.push_back(link->parent_joint->name);
+		joint_property j;
+
+		j.name=link->parent_joint->name;
+		j.max_vel=link->parent_joint->limits->velocity;
+		j.max_effort=link->parent_joint->limits->effort;
+		j.j_type=link->parent_joint->type;
+		j.max_pos=link->parent_joint->limits->upper;
+		j.min_pos=link->parent_joint->limits->lower;
+
+		j_props.push_back(j);
+
+		//std::cout << "joint name : " << link->parent_joint->name << endl;
+	}
     // add children:
     for (std::vector<boost::shared_ptr<urdf::Link> >::const_iterator child = link->child_links.begin();
          child!= link->child_links.end();
@@ -97,6 +111,7 @@ void UrdfExpressions2::addJoint(const boost::shared_ptr<urdf::Link>& link, std::
 }
 
 void UrdfExpressions2::getAllJointNames(std::vector<std::string>& names) {
+	j_props.clear();
     addJoint(root_link,names);
 }
 void UrdfExpressions2::generateJointMap(unsigned int initial_index)
@@ -114,7 +129,7 @@ void UrdfExpressions2::generateJointMap(unsigned int initial_index)
 }
 
 bool UrdfExpressions2::addTransform(const std::string& ee, const std::string& base) {
-    std::cout << "addTransform(" << ee << "," << base << ")"<<endl;
+   // std::cout << "addTransform(" << ee << "," << base << ")"<<endl;
     LinkMap::iterator it_ee, it_base;
     it_ee = linkmap.find(ee);
     if (it_ee==linkmap.end()) {
@@ -136,7 +151,7 @@ bool UrdfExpressions2::addTransform(const std::string& ee, const std::string& ba
         LinkSet::iterator it = linkset.find(p);
         if (it!=linkset.end()) {
             rootlist.push_back(*it);
-            std::cout << "\troot: " << (*it)->name << std::endl;
+         //   std::cout << "\troot: " << (*it)->name << std::endl;
             break;
         }
         p = p->getParent();
@@ -222,42 +237,6 @@ Expression<Frame>::Ptr UrdfExpressions2::getExpression(int i) {
 
     return cached<Frame>(inv(e_root_base)*e_root_ee);
 }
-/*
-    KDL::Expression<KDL::Frame>::Ptr  toKdl(LightContext::Ptr& ctx, const JointPtr& jnt);
-
-    KDL::Expression<KDL::Frame>::Ptr compose_tree(
-        LightContext::Ptr& ctx,
-        const LinkPtr& p,
-        const LinkPtr& p_root
-    );
-
-    void addJoint(const boost::shared_ptr<urdf::Link>& link, std::vector<std::string>& names);
-
-    UrdfExpressions2(double K_limits,double velocity_scale=1.0, bool poslimits=true, bool vellimits=true);
-
-    bool readFromFile( const std::string& filename );
-    bool readFromParam(const std::string& parameter);
-
-    //bool read_fromFile(const std::string& filename);
-    bool read_fromString(const std::string& xml_string);
-
-
-    bool addTransform(const std::string& frame, const std::string& base);
-
-    void getAllJointNames(std::vector<std::string>& names);
-    KDL::Expression<KDL::Frame>::Ptr getExpression(LightContext::Ptr& ctx, int i);
-
-    void getAllLinkProperties( std::vector<link_property>& props, UrdfExpressions2::LinkPtr p_root=UrdfExpressions2::LinkPtr());
-};
-
-
-UrdfExpressions2::UrdfExpressions2(double K_limits,double velocity_scale, bool poslimits, bool vellimits) {
-    this->K_limits = K_limits;
-    this->velocity_scale = velocity_scale;
-    this->poslimits = poslimits;
-    this->vellimits = vellimits;
-    jointset.clear();
-}
 
 
 
@@ -286,101 +265,5 @@ void UrdfExpressions2::getAllLinkProperties( std::vector<link_property>& props, 
 
 
 
-
-Expression<Frame>::Ptr UrdfExpressions2::getExpression(LightContext::Ptr& ctx,int i) {
-    //std::cout << "getExpression(ctx,"<< i << ")"<< endl;
-    assert( (0<=i) && ( i < (int)transformlist.size() ) );
-    LinkPtr p_ee   = transformlist[i].first;
-    LinkPtr p_base = transformlist[i].second;
-    LinkPtr p_root = rootlist[i];
-    Expression<Frame>::Ptr e_root_ee;
-    Expression<Frame>::Ptr e_root_base;
-    e_root_ee   = compose_tree(ctx,p_ee,p_root);
-    e_root_base = compose_tree(ctx,p_base,p_root);
-
-    return cached<Frame>(inv(e_root_base)*e_root_ee);
-}
-
- */
-
-/*
-
-Expression<Frame>::Ptr  UrdfExpressions2::toKdl(LightContext::Ptr& ctx, const UrdfExpressions2::JointPtr& jnt) {
-    Expression<Frame>::Ptr expr;
-    Frame F_parent_jnt = toKdl(jnt->parent_to_joint_origin_transform);
-    switch (jnt->type){
-        case urdf::Joint::FIXED : {
-            return  Constant(F_parent_jnt);
-        }
-        case urdf::Joint::REVOLUTE : {
-            Expression<double>::Ptr inp  = ctx->addScalarVariable(jnt->name,"robot");
-            Vector axis = toKdl(jnt->axis);
-            JointSet::iterator it=jointset.find(jnt);
-            if ((it==jointset.end())&&(jnt->limits)) {
-                jointset.insert(jnt);
-                if (vellimits) {
-                    int robotvar = ctx->getScalarNdx(jnt->name);
-                    ctx->addBoxConstraint( jnt->name + ":velocitylimit", robotvar,
-                                           -velocity_scale*jnt->limits->velocity,
-                                            velocity_scale*jnt->limits->velocity);
-                }
-                if (poslimits) {
-                    ctx->addInequalityConstraint(jnt->name+":positionlimit",
-                                                 inp,
-                                                 jnt->limits->lower, K_limits,
-                                                 jnt->limits->upper, K_limits, 1.0, 1);
-                }
-            }
-            return Constant(F_parent_jnt)*frame(rot(axis,inp));
-        }
-        case urdf::Joint::CONTINUOUS : {
-            // std::cout << "joint : " << jnt->name << " is continuous" << std::endl;
-            Expression<double>::Ptr inp  = ctx->addScalarVariable(jnt->name,"robot");
-            Vector axis = toKdl(jnt->axis);
-            JointSet::iterator it=jointset.find(jnt);
-            if ((it==jointset.end())&&(jnt->limits)) {
-                jointset.insert(jnt);
-                //cerr << "joint : " << jnt->name << " added " << endl;
-                if (vellimits) {
-                    int robotvar = ctx->getScalarNdx(jnt->name);
-                    ctx->addBoxConstraint( jnt->name + ":velocitylimit", robotvar,
-                                           -velocity_scale*jnt->limits->velocity,
-                                            velocity_scale*jnt->limits->velocity);
-                }
-            }
-            return Constant(F_parent_jnt)*frame(rot(axis,inp));
-        }
-        case urdf::Joint::PRISMATIC : {
-            Expression<double>::Ptr inp  = ctx->addScalarVariable(jnt->name,"robot");
-            Vector axis = toKdl(jnt->axis);
-            JointSet::iterator it=jointset.find(jnt);
-            if ((it==jointset.end())&&(jnt->limits)) {
-                jointset.insert(jnt);
-                if (vellimits) {
-                    int robotvar = ctx->getScalarNdx(jnt->name);
-                    ctx->addBoxConstraint( jnt->name + ":velocitylimit", robotvar,
-                                           -velocity_scale*jnt->limits->velocity,
-                                            velocity_scale*jnt->limits->velocity);
-                }
-                if (poslimits) {
-                    ctx->addInequalityConstraint(jnt->name+":positionlimit",
-                                                 inp,
-                                                 jnt->limits->lower, K_limits,
-                                                 jnt->limits->upper, K_limits, 1.0, 1);
-                }
-            }
-            return Constant(F_parent_jnt)*frame(Constant(axis)*inp);
-        }
-        default : {
-            ROS_WARN("Converting unknown joint type of joint '%s' into a fixed joint", jnt->name.c_str());
-            return  Constant(F_parent_jnt);
-        }
-    }
-    return Constant(F_parent_jnt);
-}
-
-
-
- */
 
 }// namespace KDL
