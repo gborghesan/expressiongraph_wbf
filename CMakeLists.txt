@@ -43,8 +43,8 @@ rosbuild_add_library(simple_force_solver
 rosbuild_add_library(velocity_solver
   src/solver/velocity_solver.cpp)   
   
-rosbuild_add_library(urdfExpr2
-  src/utils/UrdfExpr2.cpp)   
+rosbuild_add_library(urdf2Expr
+  src/utils/Urdf2Expr.cpp)   
    
 target_link_libraries(matlab_reporter expressiongraph)
 target_link_libraries(controllers expressiongraph)
@@ -54,7 +54,7 @@ target_link_libraries(velocity_solver
   expressiongraph qpOASES
   controllers space_description)
 
-target_link_libraries(urdfExpr2 expressiongraph urdfdom_model)
+target_link_libraries(urdf2Expr expressiongraph urdfdom_model)
 
 
 ADD_SUBDIRECTORY(tests)

@@ -63,7 +63,7 @@ struct link_property {
 
     };
 
-class UrdfExpressions2 {
+class Urdf2Expressions {
 public:
     typedef boost::shared_ptr<const urdf::Link>                               LinkPtr;
     typedef boost::shared_ptr<const urdf::Joint>                              JointPtr;
@@ -109,7 +109,7 @@ public:
     );
     KDL::Expression<KDL::Frame>::Ptr getExpression( int i);
 
-    void getAllLinkProperties( std::vector<link_property>& props, UrdfExpressions2::LinkPtr p_root=UrdfExpressions2::LinkPtr());
+    void getAllLinkProperties( std::vector<link_property>& props, Urdf2Expressions::LinkPtr p_root=Urdf2Expressions::LinkPtr());
 
 };
 

@@ -1,5 +1,5 @@
 /* Author: Erwin Aertbelien, Enea Scioni*/
-#include <expressiongraph_wbf/utils/UrdfExpr2.hpp>
+#include <expressiongraph_wbf/utils/Urdf2Expr.hpp>
 
 
 using namespace std;
@@ -10,20 +10,20 @@ namespace KDL
 
 //void UrdfExpressions2::hash_names( const boost::shared_ptr<urdf::Link>&  link, int level=0);
 
-KDL::Vector UrdfExpressions2::toKdl(urdf::Vector3 v) {
+KDL::Vector Urdf2Expressions::toKdl(urdf::Vector3 v) {
 	return KDL::Vector(v.x, v.y, v.z);
 }
 
-KDL::Rotation UrdfExpressions2::toKdl(urdf::Rotation r) {
+KDL::Rotation Urdf2Expressions::toKdl(urdf::Rotation r) {
 	return KDL::Rotation::Quaternion(r.x, r.y, r.z, r.w);
 }
 
-KDL::Frame UrdfExpressions2::toKdl(urdf::Pose p) {
+KDL::Frame Urdf2Expressions::toKdl(urdf::Pose p) {
 	return KDL::Frame(toKdl(p.rotation), toKdl(p.position));
 
 }
 
-bool UrdfExpressions2::readFromFile(const std::string& filename) {
+bool Urdf2Expressions::readFromFile(const std::string& filename) {
 	std::string xml_string;
 	std::fstream xml_file(filename.c_str(), std::fstream::in);
 	while ( xml_file.good() ) {
@@ -38,7 +38,7 @@ bool UrdfExpressions2::readFromFile(const std::string& filename) {
 	return true;
 }
 
-bool UrdfExpressions2::readFromString(const std::string& xml_string) {
+bool Urdf2Expressions::readFromString(const std::string& xml_string) {
 	using namespace urdf;
 	boost::shared_ptr<ModelInterface> robot = parseURDF(xml_string);
 	if (!robot){
@@ -59,7 +59,7 @@ bool UrdfExpressions2::readFromString(const std::string& xml_string) {
 }
 
 
-void UrdfExpressions2::hash_names( const boost::shared_ptr<urdf::Link>& link, int level) {
+void Urdf2Expressions::hash_names( const boost::shared_ptr<urdf::Link>& link, int level) {
 	using namespace urdf;
 	linkmap[ link->name ] = link;
 	for (std::vector<boost::shared_ptr<Link> >::const_iterator child = link->child_links.begin(); child != link->child_links.end(); child++) {
@@ -75,7 +75,7 @@ void UrdfExpressions2::hash_names( const boost::shared_ptr<urdf::Link>& link, in
 	}
 }
 
-void UrdfExpressions2::addJoint(const boost::shared_ptr<urdf::Link>& link, std::vector<std::string>& names){
+void Urdf2Expressions::addJoint(const boost::shared_ptr<urdf::Link>& link, std::vector<std::string>& names){
 	using namespace std;
 	// add joint:
 	if ((link->parent_joint)  &&
@@ -110,11 +110,11 @@ void UrdfExpressions2::addJoint(const boost::shared_ptr<urdf::Link>& link, std::
      }
 }
 
-void UrdfExpressions2::getAllJointNames(std::vector<std::string>& names) {
+void Urdf2Expressions::getAllJointNames(std::vector<std::string>& names) {
 	j_props.clear();
     addJoint(root_link,names);
 }
-void UrdfExpressions2::generateJointMap(unsigned int initial_index)
+void Urdf2Expressions::generateJointMap(unsigned int initial_index)
 {
 	std::vector<string> names;
 	getAllJointNames(names);
@@ -128,7 +128,7 @@ void UrdfExpressions2::generateJointMap(unsigned int initial_index)
 
 }
 
-bool UrdfExpressions2::addTransform(const std::string& ee, const std::string& base) {
+bool Urdf2Expressions::addTransform(const std::string& ee, const std::string& base) {
    // std::cout << "addTransform(" << ee << "," << base << ")"<<endl;
     LinkMap::iterator it_ee, it_base;
     it_ee = linkmap.find(ee);
@@ -166,7 +166,7 @@ bool UrdfExpressions2::addTransform(const std::string& ee, const std::string& ba
 
 
 
-Expression<Frame>::Ptr  UrdfExpressions2::toKdl(const UrdfExpressions2::JointPtr& jnt) {
+Expression<Frame>::Ptr  Urdf2Expressions::toKdl(const Urdf2Expressions::JointPtr& jnt) {
     Expression<Frame>::Ptr expr;
     std::map<string, unsigned int>::iterator it;
     Frame F_parent_jnt = toKdl(jnt->parent_to_joint_origin_transform);
@@ -202,10 +202,10 @@ Expression<Frame>::Ptr  UrdfExpressions2::toKdl(const UrdfExpressions2::JointPtr
     }
     return Constant(F_parent_jnt);
 }
-Expression<Frame>::Ptr UrdfExpressions2::compose_tree(
+Expression<Frame>::Ptr Urdf2Expressions::compose_tree(
 
-        const UrdfExpressions2::LinkPtr& p,
-        const UrdfExpressions2::LinkPtr& p_root
+        const Urdf2Expressions::LinkPtr& p,
+        const Urdf2Expressions::LinkPtr& p_root
 ) {
    if (p==p_root) {
             return Constant(Frame::Identity());
@@ -224,7 +224,7 @@ Expression<Frame>::Ptr UrdfExpressions2::compose_tree(
                     );
     }
 }
-Expression<Frame>::Ptr UrdfExpressions2::getExpression(int i) {
+Expression<Frame>::Ptr Urdf2Expressions::getExpression(int i) {
     //std::cout << "getExpression(ctx,"<< i << ")"<< endl;
     assert( (0<=i) && ( i < (int)transformlist.size() ) );
     LinkPtr p_ee   = transformlist[i].first;
@@ -240,7 +240,7 @@ Expression<Frame>::Ptr UrdfExpressions2::getExpression(int i) {
 
 
 
-void UrdfExpressions2::getAllLinkProperties( std::vector<link_property>& props, UrdfExpressions2::LinkPtr p_root){
+void Urdf2Expressions::getAllLinkProperties( std::vector<link_property>& props, Urdf2Expressions::LinkPtr p_root){
     if (p_root) {
         link_property L;
         L.name = p_root->name;

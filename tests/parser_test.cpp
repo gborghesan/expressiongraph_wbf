@@ -1,5 +1,5 @@
 #include "expressiongraph_wbf/solver/constraints.hpp"
-#include "expressiongraph_wbf/utils/UrdfExpr2.hpp"
+#include "expressiongraph_wbf/utils/Urdf2Expr.hpp"
 
 
 
@@ -10,22 +10,11 @@ int main()
 {
 	//set input values
 
-	std::vector<double> inp(4);
-	inp[0] = 1;
-	inp[1] = 1.5;
-	inp[2] = -0.5;
-	inp[3] = 2;
-	std::vector<int> joint_indexes(4);
-	joint_indexes[0]=0;
-	joint_indexes[1]=1;
-	joint_indexes[2]=2;
-	joint_indexes[3]=3;
 
-	UrdfExpressions2 u;
+
+	Urdf2Expressions u;
 
 	u.readFromFile("urdf/lwr.urdf");
-
-	std::cout << " FINAL root Link: " << u.root_link->name << " has " << u.root_link->child_links.size() << " child(ren)" << std::endl;
 
 	std::vector<string> names;
 	cout<<"+++++ get names ++++++"<<endl;
