@@ -148,7 +148,7 @@ int velocity_solver::Prepare(){
 	//in H we can already put the joint weights
 	//
 
-	H.block(0,0,n_of_joints,n_of_joints)=Wqdiag.asDiagonal()*regularization_factor;
+	H.block(0,0,n_of_joints,n_of_joints)=Eigen::MatrixXd(Wqdiag.asDiagonal())*regularization_factor;
 
 
 	//Jt.resize(n_of_joints,n_of_output);
