@@ -90,24 +90,29 @@ void Urdf2Expressions::addJoint(const boost::shared_ptr<urdf::Link>& link, std::
 		joint_property j;
 
 		j.name=link->parent_joint->name;
-		j.max_vel=link->parent_joint->limits->velocity;
-		j.max_effort=link->parent_joint->limits->effort;
-		j.j_type=link->parent_joint->type;
-		j.max_pos=link->parent_joint->limits->upper;
-		j.min_pos=link->parent_joint->limits->lower;
 
+		if(link->parent_joint->limits)
+		{
+			j.max_vel=link->parent_joint->limits->velocity;
+			j.max_effort=link->parent_joint->limits->effort;
+			j.max_pos=link->parent_joint->limits->upper;
+			j.min_pos=link->parent_joint->limits->lower;
+		}
+		j.j_type=link->parent_joint->type;
 		j_props.push_back(j);
 
-		//std::cout << "joint name : " << link->parent_joint->name << endl;
 	}
-    // add children:
-    for (std::vector<boost::shared_ptr<urdf::Link> >::const_iterator child = link->child_links.begin();
-         child!= link->child_links.end();
-        ++child) {
-            if (*child) {
-                addJoint(*child,names);
-            }
-     }
+
+	// add children:
+	for (std::vector<boost::shared_ptr<urdf::Link> >::const_iterator child = link->child_links.begin();
+			child!= link->child_links.end();
+			++child)
+	{
+		if (*child)
+		{
+			addJoint(*child,names);
+		}
+	}
 }
 
 void Urdf2Expressions::getAllJointNames(std::vector<std::string>& names) {

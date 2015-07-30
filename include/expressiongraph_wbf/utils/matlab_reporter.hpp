@@ -15,6 +15,9 @@ public:
 	bool add_var(const std::string & name,Expression<Frame>::Ptr e);
 	bool add_var(const std::string & name,Expression<Twist>::Ptr e);
 	bool add_var(const std::string & name,Expression<Wrench>::Ptr e);
+
+	bool add_var(const std::string & name,double * e);
+
 	void write_headers();
 
 	void write_values();
@@ -27,6 +30,9 @@ private:
 	std::map<std::string,  Expression<Frame>::Ptr> 		map_expr_frame;
 	std::map<std::string,  Expression<Twist>::Ptr> 		map_expr_twist;
 	std::map<std::string,  Expression<Wrench>::Ptr> 	map_expr_wrench;
+
+	std::map<std::string,  double * > 	map_double;
+
 	std::vector<std::string> names;
 };
 

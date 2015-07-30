@@ -13,6 +13,18 @@ bool matlab_reporter::add_var(const std::string & name,Expression<double>::Ptr e
 	names.push_back(name);
 	return true;
 }
+
+
+bool matlab_reporter::add_var(const std::string & name,double* e)
+{
+	if(std::find(names.begin(), names.end(), name)!=names.end())
+		return false;
+	map_double[name]=e;
+	names.push_back(name);
+	return true;
+}
+
+
 bool matlab_reporter::add_var(const std::string & name,Expression<Vector>::Ptr e)
 {
 	if(std::find(names.begin(), names.end(), name)!=names.end())
@@ -54,6 +66,10 @@ bool matlab_reporter::add_var(const std::string & name,Expression<Wrench>::Ptr e
 	return true;
 }
 
+
+
+
+
 void matlab_reporter::write_headers()
 {
 	std::map<std::string,  Expression<double>::Ptr>::iterator itd;
@@ -62,6 +78,8 @@ void matlab_reporter::write_headers()
 	std::map<std::string,  Expression<Frame>::Ptr>::iterator itf;
 	std::map<std::string,  Expression<Twist>::Ptr>::iterator itt;
 	std::map<std::string,  Expression<Wrench>::Ptr>::iterator itw;
+
+	std::map<std::string,  double *>::iterator itdp;
 
 	std::vector<std::string>::iterator it;
 	std::stringstream D;
@@ -86,6 +104,15 @@ void matlab_reporter::write_headers()
 			N<<"'"<<*it<<"'";if ((it == names.end()-1))	N<< "};"<<std::endl;else N<< ",";
 			continue;
 		}
+
+		itdp=map_double.find(*it);
+		if(itdp!= map_double.end()){
+			D <<"D."<<*it<<"="<<i<<";"<<std::endl;i++;
+			N<<"'"<<*it<<"'";if ((it == names.end()-1))	N<< "};"<<std::endl;else N<< ",";
+			continue;
+		}
+
+
 		//vector
 		itv=map_expr_vector.find(*it);
 		if(itv!= map_expr_vector.end()){
@@ -185,6 +212,8 @@ void matlab_reporter::write_values(){
 	std::map<std::string,  Expression<Twist>::Ptr>::iterator itt;
 	std::map<std::string,  Expression<Wrench>::Ptr>::iterator itw;
 
+
+	std::map<std::string,  double *>::iterator itdp;
 	for (it=names.begin(); it!=names.end(); ++it)
 	{
 		//scalar
@@ -194,6 +223,14 @@ void matlab_reporter::write_values(){
 			myfile <<itd->second->value();
 			if (it == names.end()-1) myfile<<std::endl;else myfile<< "\t";
 		}
+
+		itdp=map_double.find(*it);
+		if(itdp!= map_double.end())
+		{
+			myfile <<*itdp->second;
+			if (it == names.end()-1) myfile<<std::endl;else myfile<< "\t";
+		}
+
 		//vector
 		itv=map_expr_vector.find(*it);
 		if(itv!= map_expr_vector.end()){

@@ -12,7 +12,8 @@
   <depend package="roscpp"/>
   
   <export>
-    <cpp cflags="-I${prefix}/include -I${prefix}/external/qpOASES/include" lflags="-L${prefix}/lib"/>
+    <cpp cflags="-I${prefix}/include -I${prefix}/external/qpOASES/include" 
+         lflags="-L${prefix}/lib -lqpOASES"/>
   </export>  
 
 </package>
