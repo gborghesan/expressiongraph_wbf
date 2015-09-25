@@ -8,6 +8,17 @@ This library depends by:
 
 This library is built with rosmake, but is actually a stand alone library (apart for the urdf parser)
 
+the most complete example is tests/velocity_solver_test.cpp.
+
+the library contains also an urdf parser, and a logger to matlab.
+
+the library is mainly composed by 2 classes
+- space description -> compute a jacobian
+- controllers -> compute the control action
+
+these two class are encapsolated into a costraint, and several contraint in a solver (where the actual computations takle place)
+
+
 ## workflow
 
 ### configuration
