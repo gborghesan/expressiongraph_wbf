@@ -1,4 +1,4 @@
-/* Author: Erwin Aertbelien, Enea Scioni*/
+/* Author: Erwin Aertbelien, Enea Scioni, modified by Gianni Borghesan*/
 #include <expressiongraph_wbf/utils/Urdf2Expr.hpp>
 
 
@@ -45,13 +45,9 @@ bool Urdf2Expressions::readFromString(const std::string& xml_string) {
 		std::cerr << "ERROR: Model Parsing the xml failed: " << std::endl;
 		return false;
 	}
-	//std::cout << "robot name is: " << robot->getName() << std::endl;
-	// get info from parser
-	//std::cout << "---------- Successfully Parsed XML ---------------" << std::endl;
-	// get root link
-	root_link=robot->root_link_;
+		root_link=robot->root_link_;
 	if (!root_link) return false;
-	//std::cout << "root Link: " << root_link->name << " has " << root_link->child_links.size() << " child(ren)" << std::endl;
+
 	hash_names(root_link);
 	getAllLinkProperties(l_props,root_link);
 
