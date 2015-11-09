@@ -1,5 +1,5 @@
-#include "expressiongraph_wbf/controllers/position_controller.hpp"
-#include "expressiongraph_wbf/controllers/rotation_controller.hpp"
+#include <expressiongraph_wbf/controllers/scalar_controllers.hpp>
+#include <expressiongraph_wbf/controllers/rotation_controllers.hpp>
 #include "kdl/frames_io.hpp"
 using namespace wbf;
 using namespace std;
@@ -30,7 +30,7 @@ int main()
 	q[1] = 1.5;
 	q[2] = -0.5;
 	q[3] = 2;
-	controller::Ptr ctrl(new position_controller(w_x_ee,Constant(0.0),Constant(0.3)));
+	controller::Ptr ctrl(new proportional_scalar_controller(w_x_ee,Constant(0.0),Constant(0.3)));
 	ctrl->update_expressions(q,joint_indexes);
 	Eigen::VectorXd res(1);
 	Eigen::VectorXd resR(3);
@@ -39,7 +39,7 @@ int main()
 
 
 	controller::Ptr ctrlR(
-			new rotation_controller(w_R_ee,
+			new proportional_rotation_controller(w_R_ee,
 			Constant(KDL::Rotation::Identity()),
 			Constant(1.0)));
 	ctrlR->update_expressions(q,joint_indexes);

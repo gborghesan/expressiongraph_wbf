@@ -1,5 +1,5 @@
+#include <expressiongraph_wbf/controllers/scalar_controllers.hpp>
 #include "expressiongraph_wbf/solver/constraints.hpp"
-#include "expressiongraph_wbf/controllers/position_controller.hpp"
 
 
 
@@ -41,7 +41,7 @@ int main()
 	Expression<double>::Ptr scalar_des=Constant(0.1);
 	Expression<double>::Ptr gain=Constant(3.1);
 
-	controller::Ptr ctrl(new position_controller(w_x_ee,scalar_des,gain));
+	controller::Ptr ctrl(new proportional_scalar_controller(w_x_ee,scalar_des,gain));
 	space_description::Ptr space(new scalar_space(w_x_ee));
 	space_description::Ptr spaceR(new rot_space(w_R_ee));
 

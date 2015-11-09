@@ -4,7 +4,7 @@
 #define EXPRESSIONGRAPH_CONTROLLER_ROT_HPP
 using namespace KDL;
 namespace wbf {
-class rotation_controller:public controller
+class proportional_rotation_controller:public controller
 {
 private:
 	Expression<Rotation>::Ptr p_des;
@@ -13,7 +13,7 @@ private:
 	which_direction_type which_direction;
 
 public:
-	rotation_controller(Expression<Rotation>::Ptr _p_meas ,
+	proportional_rotation_controller(Expression<Rotation>::Ptr _p_meas ,
 			Expression<Rotation>::Ptr _p_des,
 			Expression<double>::Ptr _K,
 			which_direction_type _type=FULL_ROTATION

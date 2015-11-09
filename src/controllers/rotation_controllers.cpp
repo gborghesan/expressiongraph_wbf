@@ -1,8 +1,8 @@
-#include "expressiongraph_wbf/controllers/rotation_controller.hpp"
+#include <expressiongraph_wbf/controllers/rotation_controllers.hpp>
 using namespace KDL;
 namespace wbf {
 
-rotation_controller::rotation_controller(Expression<Rotation>::Ptr _p_meas,
+proportional_rotation_controller::proportional_rotation_controller(Expression<Rotation>::Ptr _p_meas,
 		Expression<Rotation>::Ptr _p_des,
 		Expression<double>::Ptr _K,
 		which_direction_type _t
@@ -32,7 +32,7 @@ rotation_controller::rotation_controller(Expression<Rotation>::Ptr _p_meas,
 		break;
 	}
 }
-void rotation_controller::update_expressions(
+void proportional_rotation_controller::update_expressions(
 		const std::vector<double> & q_in,
 		const std::vector<int> & q_index)
 {
@@ -40,14 +40,14 @@ void rotation_controller::update_expressions(
 	//std::cout<<"OK"<<std::endl;
 }
 
-void rotation_controller::update_time(double time, int time_index)
+void proportional_rotation_controller::update_time(double time, int time_index)
 {
 	p_des->setInputValue(time_index,time);
 	K->setInputValue(time_index,time);
 }
 
 //TODO Check math of this function!!!!
-bool rotation_controller::compute_action(Eigen::VectorXd &res)
+bool proportional_rotation_controller::compute_action(Eigen::VectorXd &res)
 {
 	if (res.size()!=size_of_output) return false;
 	Rotation w_R_m=p_meas->value();

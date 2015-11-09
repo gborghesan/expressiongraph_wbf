@@ -1,7 +1,5 @@
+#include <expressiongraph_wbf/controllers/scalar_controllers.hpp>
 #include "expressiongraph_wbf/solver/velocity_solver.hpp"
-
-#include "expressiongraph_wbf/controllers/position_controller.hpp"
-
 
 #include <kdl/chain.hpp>
 #include <kdl/chainfksolver.hpp>
@@ -75,9 +73,9 @@ int main()
 	space_description::Ptr space_z(new scalar_space(w_z_ee));
 
 	Expression<double>::Ptr gain=Constant(K);
-	controller::Ptr ctrl_x(new position_controller(w_x_ee,scalar_des,gain));
-	controller::Ptr ctrl_y(new position_controller(w_y_ee,scalar_des,gain));
-	controller::Ptr ctrl_z(new position_controller(w_z_ee,scalar_des,gain));
+	controller::Ptr ctrl_x(new proportional_scalar_controller(w_x_ee,scalar_des,gain));
+	controller::Ptr ctrl_y(new proportional_scalar_controller(w_y_ee,scalar_des,gain));
+	controller::Ptr ctrl_z(new proportional_scalar_controller(w_z_ee,scalar_des,gain));
 
 	constraint::Ptr c_x(new constraint (space_x,ctrl_x,ctrl_x));
 	constraint::Ptr c_y(new constraint (space_y,ctrl_y,ctrl_y));

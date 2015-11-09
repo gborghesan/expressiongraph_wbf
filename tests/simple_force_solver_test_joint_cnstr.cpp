@@ -1,7 +1,5 @@
+#include <expressiongraph_wbf/controllers/scalar_controllers.hpp>
 #include "expressiongraph_wbf/solver/simple_force_solver.hpp"
-
-#include "expressiongraph_wbf/controllers/position_controller.hpp"
-
 
 #include <kdl/chain.hpp>
 #include <kdl/chainfksolver.hpp>
@@ -97,10 +95,10 @@ int main()
 
 
 	Expression<double>::Ptr gain=Constant(K);
-	controller::Ptr ctrl_x(new position_controller(w_x_ee,scalar_des,gain));
-	controller::Ptr ctrl_y(new position_controller(w_y_ee,scalar_des,gain));
-	controller::Ptr ctrl_z(new position_controller(w_z_ee,scalar_des,gain));
-	controller::Ptr ctrl_q(new position_controller(input(4),Constant(0.0),gain));
+	controller::Ptr ctrl_x(new proportional_scalar_controller(w_x_ee,scalar_des,gain));
+	controller::Ptr ctrl_y(new proportional_scalar_controller(w_y_ee,scalar_des,gain));
+	controller::Ptr ctrl_z(new proportional_scalar_controller(w_z_ee,scalar_des,gain));
+	controller::Ptr ctrl_q(new proportional_scalar_controller(input(4),Constant(0.0),gain));
 
 	constraint::Ptr c_x(new constraint (space_x,ctrl_x));
 	constraint::Ptr c_y(new constraint (space_y,ctrl_y));
