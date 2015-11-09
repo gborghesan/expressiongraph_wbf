@@ -5,3 +5,9 @@ bin/*
 build/*
 lib/*
 external/qpOASES/*
+external/CMakeFiles/*
+external/Makefile
+external/cmake_install.cmake
+tests/CMakeFiles/*
+tests/Makefile
+tests/cmake_install.cmake
