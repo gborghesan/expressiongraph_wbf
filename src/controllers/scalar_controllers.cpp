@@ -14,7 +14,8 @@ void direct_controller::update_expressions(
 		const std::vector<double> & q_in,
 		const std::vector<int> & q_index)
 {}
-
+void direct_controller::update_expressions_rot(const std::vector<KDL::Rotation>&R,
+		const std::vector<int> & q_index){};
 void direct_controller::update_time(double time, int time_index)
 {
 	val_des->setInputValue(time_index,time);
@@ -47,6 +48,11 @@ void proportional_scalar_controller::update_expressions(
 	p_meas->setInputValues(q_index,q_in);
 	//std::cout<<"OK"<<std::endl;
 }
+void proportional_scalar_controller::update_expressions_rot(const std::vector<KDL::Rotation>&R,
+		const std::vector<int> & q_index)
+{
+	p_meas->setInputValues(q_index,R);
+};
 
 void proportional_scalar_controller::update_time(double time, int time_index)
 {
@@ -68,7 +74,7 @@ void proportional_scalar_controller::update_time(double time, int time_index)
 
 
 
-
+/*
 proportional_deadzone_scalar_controller::proportional_deadzone_scalar_controller(Expression<double>::Ptr _p_meas,
 		Expression<double>::Ptr _lower_bound,
 		Expression<double>::Ptr _upper_bound,
@@ -162,10 +168,11 @@ void proportional_deadzone_scalar_controller::update_time(double time, int time_
 		 double _ff=ff->value();
 		 double xdd=p_des->derivative(time_index_ff);
 		 res[0]=(xd-x)*k+xdd*_ff;
-		/*std::cout<<"x:\t"<<x<<"\txd:\t"<<xd
-				 <<"\tk:\t"<<k
-				 <<"\txdd:\t"<<xdd
-				 <<"\nres:\t"<<res[0]<<std::endl;*/
+		//std::cout<<"x:\t"<<x<<"\txd:\t"<<xd
+		//		 <<"\tk:\t"<<k
+		//		 <<"\txdd:\t"<<xdd
+		//		 <<"\nres:\t"<<res[0]<<std::endl;
 		 return true;
 	 }
+*/
 };

@@ -19,6 +19,8 @@ public:
  */
 	virtual void update_expressions(const std::vector<double>&,
 			const std::vector<int>& q_index)=0;
+	virtual void update_expressions_rot(const std::vector<KDL::Rotation>&R,
+			const std::vector<int> & q_index)=0;
 	/*
 	 * this function is meant for updating the value of desired values
 	 * that are expressed as a function of time

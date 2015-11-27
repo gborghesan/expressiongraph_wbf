@@ -22,6 +22,11 @@ public:
 
 	virtual void update_expressions(const std::vector<double>&q,
 			const std::vector<int> & q_index)=0;
+	/*the index vector should contains only the initial index of the rotation, not all 3 numbers
+	these should be at least 3 indices apart
+	*/
+	virtual void update_expressions_rot(const std::vector<KDL::Rotation>&R,
+			const std::vector<int> & q_index)=0;
 	virtual bool compute_jacobian(Eigen::MatrixXd& J_partial,
 			const std::vector<int> index_of_variables)=0;
 	virtual ~space_description(){};
@@ -32,7 +37,10 @@ public:
 	std::string which_control(){return type;}
 } ;
 
-//derived classes
+/*
+ * derived classes
+ * */
+
 class scalar_space:public space_description
 {
 private:
@@ -44,6 +52,8 @@ public:
 	//scalar_space& operator=(scalar_space const &s);
 	void update_expressions(const std::vector<double>&q,
 			const std::vector<int> & q_index);
+	void update_expressions_rot(const std::vector<KDL::Rotation>&R,
+				const std::vector<int> & q_index);
 	 bool compute_jacobian(Eigen::MatrixXd& J_partial,
 				const std::vector<int> index_of_variables);
 };
@@ -68,6 +78,8 @@ public:
 
 	void update_expressions(const std::vector<double>&q,
 			const std::vector<int> & q_index);
+	void update_expressions_rot(const std::vector<KDL::Rotation>&R,
+				const std::vector<int> & q_index);
 	 bool compute_jacobian(Eigen::MatrixXd& J_partial,
 				const std::vector<int> index_of_variables);
 };
@@ -94,6 +106,8 @@ public:
 
 	void update_expressions(const std::vector<double>&q,
 			const std::vector<int> & q_index);
+	void update_expressions_rot(const std::vector<KDL::Rotation>&R,
+				const std::vector<int> & q_index);
 	 bool compute_jacobian(Eigen::MatrixXd& J_partial,
 				const std::vector<int> index_of_variables);
 };

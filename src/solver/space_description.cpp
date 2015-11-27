@@ -22,6 +22,11 @@ void scalar_space::update_expressions(const std::vector<double>&q,
 {
 	space_output->setInputValues(q_index,q);
 }
+void scalar_space::update_expressions_rot(const std::vector<KDL::Rotation>&R,
+			const std::vector<int> & q_index)
+{
+	space_output->setInputValues(q_index,R);
+}
 bool scalar_space::compute_jacobian(Eigen::MatrixXd& J_partial,
 		const std::vector<int> i_of_v)
 {
@@ -39,6 +44,8 @@ bool scalar_space::compute_jacobian(Eigen::MatrixXd& J_partial,
 	//std::cout<<"x:\t"<<x<<"\txd:\t"<<xd<<"\tk:\t"<<k<<"\nres:\t"<<res[0]<<std::endl;
 	return true;
 }
+
+
 //ROTATIONAL SPACE
 rot_space::rot_space(Expression<Rotation>::Ptr _space_output,
 		which_direction_type _which_direction,bool _base_frame)
@@ -84,6 +91,11 @@ void rot_space::update_expressions(const std::vector<double>&q,
 {
 	space_output->setInputValues(q_index,q);
 	//std::cout<<"OK"<<std::endl;
+}
+void rot_space::update_expressions_rot(const std::vector<KDL::Rotation>&R,
+			const std::vector<int> & q_index)
+{
+	space_output->setInputValues(q_index,R);
 }
 bool rot_space::compute_jacobian(Eigen::MatrixXd& J_partial,
 		const std::vector<int> i_of_v)
@@ -172,6 +184,13 @@ void pos_space::update_expressions(const std::vector<double>&q,
 	if(new_base)
 		new_base->setInputValues(q_index,q);
 	//std::cout<<"OK"<<std::endl;
+}
+void pos_space::update_expressions_rot(const std::vector<KDL::Rotation>&R,
+			const std::vector<int> & q_index)
+{
+	space_output->setInputValues(q_index,R);
+	if(new_base)
+		new_base->setInputValues(q_index,R);
 }
 bool pos_space::compute_jacobian(Eigen::MatrixXd& J_partial,
 		const std::vector<int> i_of_v)

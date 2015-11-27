@@ -29,7 +29,7 @@ rosbuild_add_library(matlab_reporter
   
 rosbuild_add_library(controllers
   src/controllers/scalar_controllers.cpp
-  src/controllers/rotation_controllers.cpp
+#  src/controllers/rotation_controllers.cpp
 )  
   
 rosbuild_add_library(space_description
@@ -47,7 +47,7 @@ rosbuild_add_library(urdf2Expr
 
 rosbuild_add_library(expressiongraph_wbf
   src/controllers/scalar_controllers.cpp
-  src/controllers/rotation_controllers.cpp
+ # src/controllers/rotation_controllers.cpp
   src/solver/space_description.cpp
   src/solver/simple_force_solver.cpp
   src/solver/velocity_solver.cpp)   
