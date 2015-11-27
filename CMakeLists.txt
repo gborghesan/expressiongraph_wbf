@@ -44,6 +44,16 @@ rosbuild_add_library(velocity_solver
 rosbuild_add_library(urdf2Expr
   src/utils/Urdf2Expr.cpp)   
    
+
+rosbuild_add_library(expressiongraph_wbf
+  src/controllers/scalar_controllers.cpp
+  src/controllers/rotation_controllers.cpp
+  src/solver/space_description.cpp
+  src/solver/simple_force_solver.cpp
+  src/solver/velocity_solver.cpp)   
+ 
+target_link_libraries(expressiongraph_wbf expressiongraph qpOASES)
+   
 target_link_libraries(matlab_reporter expressiongraph)
 target_link_libraries(controllers expressiongraph)
 target_link_libraries(space_description expressiongraph)

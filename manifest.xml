@@ -13,7 +13,8 @@
   
   <export>
     <cpp cflags="-I${prefix}/include -I${prefix}/external/qpOASES/include" 
-         lflags="-L${prefix}/lib -lqpOASES"/>
+         lflags="-L${prefix}/lib -lqpOASES 
+    -lexpressiongraph_wbf -lurdf2Expr -lmatlab_reporter"/>
   </export>  
 
 </package>

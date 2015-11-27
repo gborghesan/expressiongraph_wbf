@@ -51,8 +51,8 @@ typedef struct constraint
 	};
 
 }constraint;
-
-bool check_constraint_validity(const constraint & cs)
+typedef std::map <std::string, constraint::Ptr> c_map_type;
+inline bool check_constraint_validity(const constraint & cs)
 {
 	if (cs.ctrl->output_size()!=cs.space->output_size()) return false;
 	if (cs.ctrl_sec)
@@ -60,13 +60,13 @@ bool check_constraint_validity(const constraint & cs)
 			return false;
 	return true;
 };
-bool check_constraint_validity(const constraint::Ptr & cs)
+inline bool check_constraint_validity(const constraint::Ptr & cs)
 {
 	return check_constraint_validity(*cs);
 
 };
 
-typedef std::map <std::string, constraint::Ptr> c_map_type;
+
 
 };//namespace
 #endif

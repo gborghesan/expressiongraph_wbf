@@ -9,6 +9,14 @@ scalar_space::scalar_space(Expression<double>::Ptr _space_output)
 	type="scalar";
 	size_of_output=1;
 }
+/*scalar_space& scalar_space::operator=(scalar_space const &s)
+{
+	space_output=s.space_output;
+	type="scalar";
+	size_of_output=1;
+	type=s.type;
+	return *this;
+}*/
 void scalar_space::update_expressions(const std::vector<double>&q,
 		const std::vector<int> & q_index)
 {
@@ -60,6 +68,17 @@ rot_space::rot_space(Expression<Rotation>::Ptr _space_output,
 	if (!base_frame)
 			type=type+"_own";
 }
+/*
+rot_space& rot_space::operator=(rot_space const &s)
+{
+	space_output=s.space_output;
+	which_direction=s.which_direction;
+	size_of_output=s.size_of_output;
+	base_frame=s.base_frame;
+	type=s.type;
+	return *this;
+}
+*/
 void rot_space::update_expressions(const std::vector<double>&q,
 		const std::vector<int> & q_index)
 {
@@ -136,6 +155,16 @@ pos_space::pos_space(Expression<Vector>::Ptr _space_output,
 		type=type+"_own";
 
 }
+/*pos_space& pos_space::operator=(pos_space const &s)
+{
+	space_output=s.space_output;
+	which_direction=s.which_direction;
+	size_of_output=s.size_of_output;
+	new_base=s.new_base;
+	type=s.type;
+	return *this;
+}*/
+
 void pos_space::update_expressions(const std::vector<double>&q,
 		const std::vector<int> & q_index)
 {

@@ -25,6 +25,9 @@ public:
 	virtual bool compute_jacobian(Eigen::MatrixXd& J_partial,
 			const std::vector<int> index_of_variables)=0;
 	virtual ~space_description(){};
+
+
+
 	int output_size(){return size_of_output;}
 	std::string which_control(){return type;}
 } ;
@@ -38,6 +41,7 @@ private:
 
 public:
 	scalar_space(Expression<double>::Ptr space_output);
+	//scalar_space& operator=(scalar_space const &s);
 	void update_expressions(const std::vector<double>&q,
 			const std::vector<int> & q_index);
 	 bool compute_jacobian(Eigen::MatrixXd& J_partial,
@@ -60,6 +64,8 @@ public:
 	pos_space(Expression<Vector>::Ptr _space_output,
 			which_position_type _which_direction=FULL_POSITION,
 			Expression<Rotation>::Ptr _new_base=Expression<Rotation>::Ptr());
+	//pos_space& operator=(pos_space const &s);
+
 	void update_expressions(const std::vector<double>&q,
 			const std::vector<int> & q_index);
 	 bool compute_jacobian(Eigen::MatrixXd& J_partial,
@@ -84,6 +90,8 @@ public:
 	rot_space(Expression<Rotation>::Ptr _space_output,
 			which_direction_type _which_direction=FULL_ROTATION,
 			bool _base_frame=true);
+//	rot_space& operator=(rot_space const &s);
+
 	void update_expressions(const std::vector<double>&q,
 			const std::vector<int> & q_index);
 	 bool compute_jacobian(Eigen::MatrixXd& J_partial,

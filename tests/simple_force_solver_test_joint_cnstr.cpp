@@ -87,7 +87,8 @@ int main()
 
 //build  constraints
 	const double K=100;
-	space_description::Ptr space_x(new scalar_space(w_x_ee));
+
+	space_description::Ptr space_x=space_description::Ptr(new scalar_space(w_x_ee));
 	space_description::Ptr space_y(new scalar_space(w_y_ee));
 	space_description::Ptr space_z(new scalar_space(w_z_ee));
 
@@ -95,7 +96,9 @@ int main()
 
 
 	Expression<double>::Ptr gain=Constant(K);
-	controller::Ptr ctrl_x(new proportional_scalar_controller(w_x_ee,scalar_des,gain));
+	//controller::Ptr ctrl_x(new proportional_scalar_controller(w_x_ee,scalar_des,gain));
+	controller::Ptr ctrl_x=controller::Ptr(new proportional_scalar_controller(w_x_ee,scalar_des,gain));
+
 	controller::Ptr ctrl_y(new proportional_scalar_controller(w_y_ee,scalar_des,gain));
 	controller::Ptr ctrl_z(new proportional_scalar_controller(w_z_ee,scalar_des,gain));
 	controller::Ptr ctrl_q(new proportional_scalar_controller(input(4),Constant(0.0),gain));
