@@ -45,10 +45,10 @@ int main()
 	VariableType<Vector>::Ptr w_P_trocar;
 	std::vector<int> ndx;
 	int time_index=0;
-	ndx.push_back(time_index);//index of time
+	//ndx.push_back(time_index);//index of time
 	w_P_trocar = Variable<Vector>(ndx);
 	w_P_trocar->setValue(Vector(0.1,0,0.3));//value of set-point
-	w_P_trocar->setJacobian(time_index,Vector::Zero());//used for feed-forward
+	//w_P_trocar->setJacobian(time_index,Vector::Zero());//used for feed-forward
 
 	KDL::Expression<KDL::Vector>::Ptr ee_P_trocar=inv(w_T_ee)*w_P_trocar;
 
@@ -58,6 +58,7 @@ int main()
 	space_description::Ptr space_y(new scalar_space(coord_y(ee_P_trocar)));
 
 	Expression<double>::Ptr gain=Constant(K);
+
 	controller::Ptr	ctrl_x =controller::Ptr(new proportional_scalar_controller(
 				coord_x(ee_P_trocar),KDL::Constant(0.0),gain));
 	controller::Ptr	ctrl_y =controller::Ptr(new proportional_scalar_controller(
@@ -86,10 +87,30 @@ int main()
 	pos[0]=0;pos[1]=0;pos[2]=0;
 	std::vector<KDL::Rotation> R(1);
 	R[0]=Rotation::Identity();
-	cout<<"Compute returned: "<<solver->Prepare()<<endl;
+	cout<<"Prepare returned: "<<solver->Prepare()<<endl;
 	int res=solver->Compute(pos,R,wrench_out);
-
+	cout<<"trocar\n" <<w_P_trocar->value()<<endl;
+	cout<<"ee pos\n" <<Vector(pos[0],pos[1],pos[2])<<endl;
+	cout<<"ee rot\n" <<R[0]<<endl;
 	cout<<"computed wrench\n" <<wrench_out.transpose()<<endl;
+
+	pos[0]=0.2;
+
+	 res=solver->Compute(pos,R,wrench_out);
+	cout<<"trocar\n" <<w_P_trocar->value()<<endl;
+	cout<<"ee pos\n" <<Vector(pos[0],pos[1],pos[2])<<endl;
+	cout<<"ee rot\n" <<R[0]<<endl;
+	cout<<"computed wrench\n" <<wrench_out.transpose()<<endl;
+	cout<<"Compute returned: "<<res<<endl;
+
+	R[0]=KDL::Rotation::RotX(0.3);
+
+	 res=solver->Compute(pos,R,wrench_out);
+	cout<<"trocar\n" <<w_P_trocar->value()<<endl;
+	cout<<"ee pos\n" <<Vector(pos[0],pos[1],pos[2])<<endl;
+	cout<<"ee rot\n" <<R[0]<<endl;
+	cout<<"computed wrench\n" <<wrench_out.transpose()<<endl;
+
 	cout<<"Compute returned: "<<res<<endl;
 
 

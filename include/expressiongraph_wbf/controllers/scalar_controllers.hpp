@@ -8,13 +8,13 @@ namespace wbf {
  * (generalised force in force resolved schemes)
  * to the given direction
  * */
-class direct_controller:public controller
+class direct_scalar_controller:public controller
 {
 private:
 	Expression<double>::Ptr val_des;
 
 public:
-	direct_controller(
+	direct_scalar_controller(
 			Expression<double>::Ptr _val_des);
 
 	void update_expressions(const std::vector<double> & q_in,
