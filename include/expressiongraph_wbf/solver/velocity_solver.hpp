@@ -57,13 +57,13 @@ public:
 			const int time_index=-1,
 			double max_cpu_time=0.01,
 			double regularization_factor=0.001,
-			int nWSR=10);
+			int nWSR=100);
 	velocity_solver(
 			const std::vector<int>& joint_indexes,
 			const int time_index=-1,
 			double max_cpu_time=0.01,
 			double regularization_factor=0.001,
-			int nWSR=10);
+			int nWSR=100);
 	velocity_solver();
 
 	void setJointIndex(const std::vector<int>&indx);

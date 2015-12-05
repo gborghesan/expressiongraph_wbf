@@ -68,7 +68,7 @@ velocity_solver::velocity_solver(){
 	n_of_slack=-1;
 	n_of_variables=-1;
 
-	nWSR  =10  ;
+	nWSR  =100  ;
 	cputime =0.01;
 	regularization_factor=0.001;
 
@@ -170,10 +170,10 @@ int velocity_solver::Prepare(){
 	unsigned int i_y=0, i_s=0;
 	for (it=c_map.begin();it!=c_map.end();it++)
 	{
-		if(i_s>=n_of_slack)
+	/*	if(i_s>=n_of_slack)
 			cout<<"ERROR: I_S is:"<<i_s<<" n_of_slack is:"<<n_of_slack<<endl;
 		if(i_y>=n_of_slack)
-			cout<<"ERROR: I_Y is:"<<i_y<<" n_of_output is:"<<n_of_output<<endl;
+			cout<<"ERROR: I_Y is:"<<i_y<<" n_of_output is:"<<n_of_output<<endl;*/
 
 		unsigned int size=it->second->ctrl->output_size();
 		if(it->second->priority_level==2)
@@ -297,12 +297,12 @@ int velocity_solver::Compute(const std::vector<double> &q_in, const std::vector<
 	//	cout<<"A init\n"<<A<<endl;
 	A.block(0,0,n_of_output,n_of_joints)=J;
 	A.block(0,n_of_joints,n_of_output,n_of_slack)=J_slack;
-	//	cout<<"A=[J|J_slack]\n"<<A<<endl;
-	//	cout<<"lbA\n"<<lbA<<endl;
-	//	cout<<"ubA\n"<<ubA<<endl;
-	//	cout<<"H\n"<<H<<endl;
-	//	cout<<"nWSR\n"<<nWSR<<endl;
-	//	cout<<"cputime\n"<<cputime<<endl;
+	/*	cout<<"A=[J|J_slack]\n"<<A<<endl;
+		cout<<"lbA\n"<<lbA<<endl;
+		cout<<"ubA\n"<<ubA<<endl;
+		cout<<"H\n"<<H<<endl;
+		cout<<"nWSR\n"<<nWSR<<endl;
+		cout<<"cputime\n"<<cputime<<endl;*/
 	int _nWSR=nWSR;
 	double _cputime=cputime;
 	//call QP

@@ -27,7 +27,7 @@ typedef struct constraint
 		ctrl=_ctrl;
 		priority_level=_priority_level;
 		weight=_weight;
-		ctrl_sec=controller::Ptr();
+		ctrl_sec=_ctrl;
 	};
 	constraint(
 			space_description::Ptr _space,

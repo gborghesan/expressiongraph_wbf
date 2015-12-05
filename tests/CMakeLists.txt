@@ -29,6 +29,9 @@ target_link_libraries(tests/simple_force_solver_test_without_time_with_derivativ
 rosbuild_add_executable(tests/velocity_solver_test velocity_solver_test.cpp)
 target_link_libraries(tests/velocity_solver_test controllers velocity_solver)
 
+rosbuild_add_executable(tests/velocity_solver_test_freefloat velocity_solver_test_freefloat.cpp)
+target_link_libraries(tests/velocity_solver_test_freefloat controllers velocity_solver)
+
 rosbuild_add_executable(tests/parser_test_pr2 parser_test_pr2.cpp)
 target_link_libraries(tests/parser_test_pr2 urdf2Expr)
 
