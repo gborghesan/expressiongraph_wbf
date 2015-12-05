@@ -13,7 +13,8 @@ velocity_solver::velocity_solver(
 					double _regularization_factor,
 					int _nWSR){
 
-	joint_indexes=_joint_indexes;
+	joint_indexes_for_output=_joint_indexes;
+	joint_indexes_input_scalar=_joint_indexes;
 	time_index=_time_index;
 	prepared=false;
 	ydotlb1.resize(1);	ydotlb3.resize(3);	ydotlb6.resize(6);
@@ -29,6 +30,35 @@ velocity_solver::velocity_solver(
 
 
 };
+velocity_solver::velocity_solver(
+		std::vector<int> _joint_indexes_for_output,
+		std::vector<int> _joint_indexes_input_scalar,
+		std::vector<int> _joint_indexes_input_rotation,
+					const int _time_index,
+					double _max_cpu_time,
+					double _regularization_factor,
+					int _nWSR){
+
+	joint_indexes_for_output=_joint_indexes_for_output;
+	joint_indexes_input_scalar=_joint_indexes_input_scalar;
+	joint_indexes_input_rotation=_joint_indexes_input_rotation;
+	time_index=_time_index;
+	prepared=false;
+	ydotlb1.resize(1);	ydotlb3.resize(3);	ydotlb6.resize(6);
+	ydotub1.resize(1);	ydotub3.resize(3);	ydotub6.resize(6);
+	n_of_joints=-1;n_of_output=-1;
+	n_of_slack=-1;
+	n_of_variables=-1;
+	firsttime=true;
+	regularization_factor=_regularization_factor;
+	nWSR  =_nWSR  ;
+	cputime =_max_cpu_time;
+
+
+
+};
+
+
 velocity_solver::velocity_solver(){
 	prepared=false;
 	firsttime=true;
@@ -45,9 +75,18 @@ velocity_solver::velocity_solver(){
 };
 
 void velocity_solver::setJointIndex(const std::vector<int>&_joint_indexes){
-	joint_indexes=_joint_indexes; prepared=false;
+	joint_indexes_for_output=_joint_indexes;
+	joint_indexes_input_scalar=_joint_indexes;
+	prepared=false;
 };
-
+void velocity_solver::setJointIndex(const std::vector<int>&indx_out,
+		const std::vector<int>&indx_scalar,
+		const std::vector<int>&indx_rot){
+	joint_indexes_for_output=indx_out;
+	joint_indexes_input_scalar=indx_scalar;
+	joint_indexes_input_rotation=indx_rot;
+	prepared=false;
+};
 void velocity_solver::setTimeIndex(const int _time_index){time_index=_time_index;
 };
 bool velocity_solver::addConstraint(const std::string& name,
@@ -77,17 +116,19 @@ bool velocity_solver::RemoveConstraint(const std::string &name){
 int velocity_solver::Prepare(){
 	prepared=false;
 
-
-
-	for (unsigned int i=0;i<joint_indexes.size();i++)
-		if(joint_indexes[i]==time_index || joint_indexes[i]<0)
+	for (unsigned int i=0;i<joint_indexes_for_output.size();i++)
+		if(joint_indexes_for_output[i]==time_index || joint_indexes_for_output[i]<0)
 			return -1;//index problem
-
-
+	for (unsigned int i=0;i<joint_indexes_input_scalar.size();i++)
+			if(joint_indexes_input_scalar[i]==time_index || joint_indexes_input_scalar[i]<0)
+				return -1;//index problem
+	for (unsigned int i=0;i<joint_indexes_input_rotation.size();i++)
+			if(joint_indexes_input_rotation[i]==time_index || joint_indexes_input_rotation[i]<0)
+				return -1;//index problem
 	c_map_type::iterator it;
 	n_of_output=0;
 	n_of_slack=0;
-	n_of_joints=joint_indexes.size();
+	n_of_joints=joint_indexes_for_output.size();
 
 	if(Wqdiag.size()!=n_of_joints)
 		//in case is not initialized..
@@ -162,20 +203,26 @@ int velocity_solver::Prepare(){
 void velocity_solver::setQweights(const Eigen::VectorXd& _Wqdiag)
 {	Wqdiag=_Wqdiag; prepared=false;}
 
-int velocity_solver::Compute(const std::vector<double> &q_in, double time,
+int velocity_solver::Compute(const std::vector<double> &q_in, const std::vector<Rotation> &R_in, double time,
 		Eigen::VectorXd &qdot_out,bool time_present){
 
+	if (R_in.size()!=joint_indexes_input_rotation.size()) return -15;
+	if (q_in.size()!=joint_indexes_input_scalar.size()) return -16;
 	if (!prepared) return -11;
-	if (q_in.size()!=n_of_joints) return -12;
+	if ((q_in.size()+R_in.size()*3)!=n_of_joints) return -12;
 	if (qdot_out.size()!=n_of_joints) return -13;
 
 	int i=0;
 	c_map_type::iterator it;
 	for (it=c_map.begin();it!=c_map.end();it++)
 	{
-		it->second->ctrl->update_expressions(q_in,joint_indexes);
-		it->second->ctrl_sec->update_expressions(q_in,joint_indexes);
-		it->second->space->update_expressions(q_in,joint_indexes);
+		it->second->ctrl->update_expressions(q_in,joint_indexes_input_scalar);
+		it->second->ctrl_sec->update_expressions(q_in,joint_indexes_input_scalar);
+		it->second->space->update_expressions(q_in,joint_indexes_input_scalar);
+
+		it->second->ctrl->update_expressions_rot(R_in,joint_indexes_input_rotation);
+		it->second->ctrl_sec->update_expressions_rot(R_in,joint_indexes_input_rotation);
+		it->second->space->update_expressions_rot(R_in,joint_indexes_input_rotation);
 
 		if(time_index>-1&&time_present)
 		{
@@ -184,7 +231,7 @@ int velocity_solver::Compute(const std::vector<double> &q_in, double time,
 		}
 		switch (it->second->ctrl->output_size()) {
 		case 1:
-			if(!it->second->space->compute_jacobian(J1,joint_indexes))
+			if(!it->second->space->compute_jacobian(J1,joint_indexes_for_output))
 				return -14;
 			if(!it->second->ctrl->compute_action(ydotlb1))
 				return -15;
@@ -196,7 +243,7 @@ int velocity_solver::Compute(const std::vector<double> &q_in, double time,
 			i++;
 			break;
 		case 3:
-			if(!it->second->space->compute_jacobian(J3,joint_indexes))
+			if(!it->second->space->compute_jacobian(J3,joint_indexes_for_output))
 				return -34;
 			if(!it->second->ctrl->compute_action(ydotlb3))
 				return -35;
@@ -209,7 +256,7 @@ int velocity_solver::Compute(const std::vector<double> &q_in, double time,
 			i=i+3;
 			break;
 		case 6:
-			if(!it->second->space->compute_jacobian(J6,joint_indexes))
+			if(!it->second->space->compute_jacobian(J6,joint_indexes_for_output))
 				return -64;
 			if(!it->second->ctrl->compute_action(ydotlb6))
 				return -65;
@@ -286,12 +333,28 @@ int velocity_solver::Compute(const std::vector<double> &q_in, double time,
 int velocity_solver::Compute(const std::vector<double> &q_in, double time,
 		Eigen::VectorXd &tau_out)
 {
-	return  Compute(q_in, time,tau_out,true);
+	std::vector<Rotation> R_in;
+	return  Compute(q_in,R_in, time,tau_out,true);
 };
 int velocity_solver::Compute(const std::vector<double> &q_in,
 		Eigen::VectorXd &tau_out)
 {
-	return  Compute(q_in, 0.0,tau_out,false);
+	std::vector<Rotation> R_in;
+	return  Compute(q_in,R_in, 0.0,tau_out,false);
 };
+int velocity_solver::Compute(const std::vector<double> &q_in,
+		const std::vector<Rotation> &R_in,
+		double time,
+		Eigen::VectorXd &tau_out)
+{
 
+	return  Compute(q_in,R_in, time,tau_out,true);
+};
+int velocity_solver::Compute(const std::vector<double> &q_in,
+		const std::vector<Rotation> &R_in,
+		Eigen::VectorXd &tau_out)
+{
+
+	return  Compute(q_in,R_in, 0.0,tau_out,false);
+};
 }

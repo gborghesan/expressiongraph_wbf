@@ -21,6 +21,8 @@ public:
 
 	void update_expressions(const std::vector<double> & q_in,
 			const std::vector<int> & q_index);
+	void update_expressions_rot(const std::vector<KDL::Rotation>&R,
+			const std::vector<int> & q_index);
 	bool compute_action(Eigen::VectorXd&res);
 	virtual void update_time(double time, int time_index);
 

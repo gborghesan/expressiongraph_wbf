@@ -130,7 +130,7 @@ void proportional_deadzone_scalar_controller::update_time(double time, int time_
  }
 
 
-
+*/
 	proportional_ff_scalar_controller::proportional_ff_scalar_controller(
 			Expression<double>::Ptr _p_meas,
 			Expression<double>::Ptr _p_des,
@@ -147,14 +147,20 @@ void proportional_deadzone_scalar_controller::update_time(double time, int time_
 		time_index_ff=_time_index;
 		size_of_output=1;
 	}
+
 	void proportional_ff_scalar_controller::update_expressions(
 			const std::vector<double> & q_in,
 			const std::vector<int> & q_index)
 	{
 		p_meas->setInputValues(q_index,q_in);
-		//std::cout<<"OK"<<std::endl;
+		ff->setInputValues(q_index,q_in);
 	}
-
+	void proportional_ff_scalar_controller::update_expressions_rot(const std::vector<KDL::Rotation>&R,
+			const std::vector<int> & q_index)
+	{
+		p_meas->setInputValues(q_index,R);
+		ff->setInputValues(q_index,R);
+	};
 	void proportional_ff_scalar_controller::update_time(double time, int time_index)
 	{
 		p_des->setInputValue(time_index,time);
@@ -180,5 +186,5 @@ void proportional_deadzone_scalar_controller::update_time(double time, int time_
 		//		 <<"\nres:\t"<<res[0]<<std::endl;
 		 return true;
 	 }
-*/
+
 };

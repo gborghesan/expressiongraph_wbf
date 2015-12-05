@@ -39,7 +39,12 @@ void proportional_rotation_controller::update_expressions(
 	p_meas->setInputValues(q_index,q_in);
 	//std::cout<<"OK"<<std::endl;
 }
-
+void proportional_rotation_controller::update_expressions_rot(
+		const std::vector<KDL::Rotation>&R,
+				const std::vector<int> & q_index)
+{
+	p_meas->setInputValues(q_index,R);
+}
 void proportional_rotation_controller::update_time(double time, int time_index)
 {
 	p_des->setInputValue(time_index,time);

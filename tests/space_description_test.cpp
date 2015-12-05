@@ -125,7 +125,13 @@ int main()
 	space_pos_own->compute_jacobian(J2,joint_indexes);
 	std::cout<<"Jacobian POSITION:\n"<<J2<<std::endl;
 
-	space_description::Ptr space_des_rot_own(new rot_space(w_R_ee,FULL_ROTATION,false));
+
+/* note, using the base frame=false can be done using the make constant */
+	//space_description::Ptr space_des_rot_own(new rot_space(w_R_ee,FULL_ROTATION,false));
+	// this is equivalent to the following two lines
+	Expression<Rotation>::Ptr ee_R_ee=(make_constant<Rotation>(w_R_ee))*w_R_ee;
+	space_description::Ptr space_des_rot_own(new rot_space(ee_R_ee,FULL_ROTATION));
+
 	space_des_rot_own->update_expressions(inp,joint_indexes);
 	space_des_rot_own->compute_jacobian(J2,joint_indexes);
 	std::cout<<"Jacobian Rotation_in_own:\n"<<J2<<std::endl;

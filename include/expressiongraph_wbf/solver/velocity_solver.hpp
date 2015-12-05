@@ -13,7 +13,9 @@ namespace wbf {
 #define HUGE_VALUE 1e20
 class velocity_solver{
 private:
-	std::vector<int> joint_indexes;
+	std::vector<int> joint_indexes_for_output;
+	std::vector<int> joint_indexes_input_scalar;
+	std::vector<int> joint_indexes_input_rotation;
 	int time_index;
 	unsigned int n_of_joints;
 	unsigned int n_of_slack;
@@ -45,9 +47,17 @@ private:
 
 	bool prepared;
 	bool firsttime;
-	int Compute(const std::vector<double> &q_in, double time,
-			Eigen::VectorXd &tau_out,bool time_present);
+	int Compute(const std::vector<double> &q_in, const std::vector<Rotation> &R_in, double time,
+			Eigen::VectorXd &qdot_out,bool time_present);
 public:
+	velocity_solver(
+			std::vector<int> _joint_indexes_for_output,
+			std::vector<int> _joint_indexes_input_scalar,
+			std::vector<int> _joint_indexes_input_rotation,
+			const int time_index=-1,
+			double max_cpu_time=0.01,
+			double regularization_factor=0.001,
+			int nWSR=10);
 	velocity_solver(
 			const std::vector<int>& joint_indexes,
 			const int time_index=-1,
@@ -57,6 +67,9 @@ public:
 	velocity_solver();
 
 	void setJointIndex(const std::vector<int>&indx);
+	void setJointIndex(const std::vector<int>&indx_out,
+			const std::vector<int>&indx_scalar,
+			const std::vector<int>&indx_rot);
 	void setTimeIndex(const int);
 
 	void setQweights(const Eigen::VectorXd& Wqdiag);
@@ -69,6 +82,13 @@ public:
 	int Compute(const std::vector<double> &q_in, double time,
 			Eigen::VectorXd &qdot_out);
 	int Compute(const std::vector<double> &q_in,Eigen::VectorXd &qdot_out);
+	int Compute(const std::vector<double> &q_in,
+			const std::vector<Rotation> &R_in,
+			double time,
+			Eigen::VectorXd &qdot_out);
+	int Compute(const std::vector<double> &q_in,
+			const std::vector<Rotation> &R_in,
+			Eigen::VectorXd &qdot_out);
 
 	//memory assignment copy...
 	Eigen::VectorXd getLastDesiredLBvel(){return lbA;};
