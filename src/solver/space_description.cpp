@@ -70,10 +70,13 @@ rot_space::rot_space(Expression<Rotation>::Ptr _space_output,
 		type="RotZ";
 		size_of_output=1;
 		break;
+	default:
+		type="ERROR";
 	}
 
 	if (!base_frame)
 			type=type+"_own";
+	//std::cout<<type<<std::endl;
 }
 /*
 rot_space& rot_space::operator=(rot_space const &s)

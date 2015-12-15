@@ -20,9 +20,9 @@ simple_force_solver::simple_force_solver(
 	n_of_joints=-1;n_of_output=-1;
 };
 simple_force_solver::simple_force_solver(
-		std::vector<int> _joint_indexes_for_output,
-		std::vector<int> _joint_indexes_input_scalar,
-		std::vector<int> _joint_indexes_input_rotation,
+		const std::vector<int> & _joint_indexes_for_output,
+		const std::vector<int> & _joint_indexes_input_scalar,
+		const std::vector<int> & _joint_indexes_input_rotation,
 		const int _time_index)
 {
 	joint_indexes_for_output=_joint_indexes_for_output;

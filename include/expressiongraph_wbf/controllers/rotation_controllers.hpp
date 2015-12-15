@@ -13,11 +13,18 @@ private:
 	which_direction_type which_direction;
 
 public:
-	proportional_rotation_controller(Expression<Rotation>::Ptr _p_meas ,
+	proportional_rotation_controller(
+			Expression<Rotation>::Ptr _p_meas ,
 			Expression<Rotation>::Ptr _p_des,
 			Expression<double>::Ptr _K,
-			which_direction_type _type=FULL_ROTATION
-	);
+			which_direction_type _type);
+	proportional_rotation_controller(
+			Expression<Rotation>::Ptr _p_meas ,
+			Expression<Rotation>::Ptr _p_des,
+			Expression<double>::Ptr _K	)
+			{proportional_rotation_controller(_p_meas,_p_des,_K,FULL_ROTATION);};
+
+
 
 	void update_expressions(const std::vector<double> & q_in,
 			const std::vector<int> & q_index);

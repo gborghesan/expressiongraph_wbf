@@ -52,16 +52,20 @@ void proportional_scalar_controller::update_expressions(
 		const std::vector<int> & q_index)
 {
 	p_meas->setInputValues(q_index,q_in);
-	//std::cout<<"OK"<<std::endl;
+	p_des->setInputValues(q_index,q_in);
+	K->setInputValues(q_index,q_in);
 }
 void proportional_scalar_controller::update_expressions_rot(const std::vector<KDL::Rotation>&R,
 		const std::vector<int> & q_index)
 {
 	p_meas->setInputValues(q_index,R);
+	p_des->setInputValues(q_index,R);
+	K->setInputValues(q_index,R);
 };
 
 void proportional_scalar_controller::update_time(double time, int time_index)
 {
+	p_meas->setInputValue(time_index,time);
 	p_des->setInputValue(time_index,time);
 	K->setInputValue(time_index,time);
 }
@@ -73,14 +77,13 @@ void proportional_scalar_controller::update_time(double time, int time_index)
 	 double xd=p_des->value();
 	 double k=K->value();
 	 res[0]=(xd-x)*k;
-	 //std::cout<<"x:\t"<<x<<"\txd:\t"<<xd<<"\tk:\t"<<k<<"\nres:\t"<<res[0]<<std::endl;
+
 	 return true;
  }
 
 
 
 
-/*
 proportional_deadzone_scalar_controller::proportional_deadzone_scalar_controller(Expression<double>::Ptr _p_meas,
 		Expression<double>::Ptr _lower_bound,
 		Expression<double>::Ptr _upper_bound,
@@ -91,7 +94,7 @@ proportional_deadzone_scalar_controller::proportional_deadzone_scalar_controller
 	lower_bound=_lower_bound;
 	upper_bound=_upper_bound;
 	K=_K;
-	type="prop_dead_zone";
+	type="proportional_deadzone_scalar";
 	size_of_output=1;
 }
 void proportional_deadzone_scalar_controller::update_expressions(
@@ -99,14 +102,25 @@ void proportional_deadzone_scalar_controller::update_expressions(
 		const std::vector<int> & q_index)
 {
 	p_meas->setInputValues(q_index,q_in);
-	//std::cout<<"OK"<<std::endl;
+	lower_bound->setInputValues(q_index,q_in);
+	upper_bound->setInputValues(q_index,q_in);
+	K->setInputValues(q_index,q_in);
 }
+void proportional_deadzone_scalar_controller::update_expressions_rot(const std::vector<KDL::Rotation>&R,
+		const std::vector<int> & q_index)
+{
+	p_meas->setInputValues(q_index,R);
+	lower_bound->setInputValues(q_index,R);
+	upper_bound->setInputValues(q_index,R);
+	K->setInputValues(q_index,R);
+};
 
 void proportional_deadzone_scalar_controller::update_time(double time, int time_index)
 {
-	K->setInputValue(time_index,time);
+	p_meas->setInputValue(time_index,time);
 	lower_bound->setInputValue(time_index,time);
 	upper_bound->setInputValue(time_index,time);
+	K->setInputValue(time_index,time);
 }
 
 
@@ -125,12 +139,11 @@ void proportional_deadzone_scalar_controller::update_time(double time, int time_
 		 res[0]=(u_bound-x)*k;
 	 else
 		 res[0]=0;
-	 //std::cout<<"x:\t"<<x<<"\txd:\t"<<xd<<"\tk:\t"<<k<<"\nres:\t"<<res[0]<<std::endl;
 	 return true;
  }
 
 
-*/
+
 	proportional_ff_scalar_controller::proportional_ff_scalar_controller(
 			Expression<double>::Ptr _p_meas,
 			Expression<double>::Ptr _p_des,
