@@ -84,7 +84,8 @@ void proportional_scalar_controller::update_time(double time, int time_index)
 
 
 
-proportional_deadzone_scalar_controller::proportional_deadzone_scalar_controller(Expression<double>::Ptr _p_meas,
+proportional_deadzone_scalar_controller::proportional_deadzone_scalar_controller(
+		Expression<double>::Ptr _p_meas,
 		Expression<double>::Ptr _lower_bound,
 		Expression<double>::Ptr _upper_bound,
 		Expression<double>::Ptr _K
