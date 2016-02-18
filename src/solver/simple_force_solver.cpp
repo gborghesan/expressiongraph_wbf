@@ -136,9 +136,9 @@ int simple_force_solver::Compute(
 		switch (it->second->ctrl->output_size()) {
 		case 1:
 			if(!it->second->space->compute_jacobian(J1,joint_indexes_for_output))
-				return -14;
+				return -24;
 			if(!it->second->ctrl->compute_action(lambda1))
-				return -15;
+				return -25;
 			J.row(i)=J1;
 			lambda_des(i)=lambda1(0);
 			i++;
