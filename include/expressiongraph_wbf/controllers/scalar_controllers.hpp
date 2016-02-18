@@ -72,10 +72,10 @@ public:
 	 *   \f]
 	 */
 	proportional_deadzone_scalar_controller(
-			Expression<double>::Ptr _p_meas,
-			Expression<double>::Ptr p_des_up,
-			Expression<double>::Ptr p_des_down,
-			Expression<double>::Ptr _K
+			Expression<double>::Ptr p_meas,
+			Expression<double>::Ptr lower_bound,
+			Expression<double>::Ptr upper_bound,
+			Expression<double>::Ptr K
 	);
 
 	void update_expressions(const std::vector<double> & q_in,
