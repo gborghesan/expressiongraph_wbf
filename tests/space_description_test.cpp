@@ -92,8 +92,19 @@ int main()
 
 	std::cout<<"======TEST ON ROTATION========:\n"<<std::endl;
 
-	space_description::Ptr space_des_rot(new rot_space(w_R_ee));
+	w_R_ee->setInputValues(joint_indexes,inp);
+
+	space_description::Ptr space_des_rot;
+
+	space_des_rot=space_description::Ptr(new rot_space(w_R_ee));
+
+	std::cout<<"======here========:\n"<<std::endl;
+
+
 	space_des_rot->update_expressions(inp,joint_indexes);
+
+	std::cout<<"======here 2======:\n"<<std::endl;
+
 	Eigen::MatrixXd J2(3,4);
 	space_des_rot->compute_jacobian(J2,joint_indexes);
 	std::cout<<"Jacobian Rotation:\n"<<J2<<std::endl;
@@ -130,7 +141,7 @@ int main()
 	//space_description::Ptr space_des_rot_own(new rot_space(w_R_ee,FULL_ROTATION,false));
 	// this is equivalent to the following two lines
 	Expression<Rotation>::Ptr ee_R_ee=(make_constant<Rotation>(w_R_ee))*w_R_ee;
-	space_description::Ptr space_des_rot_own(new rot_space(ee_R_ee,FULL_ROTATION));
+	space_description::Ptr space_des_rot_own(new rot_space(ee_R_ee));
 
 	space_des_rot_own->update_expressions(inp,joint_indexes);
 	space_des_rot_own->compute_jacobian(J2,joint_indexes);

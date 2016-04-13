@@ -102,11 +102,9 @@ public:
 	rot_space(Expression<Rotation>::Ptr _space_output,
 			which_direction_type _which_direction,
 			bool _base_frame);
-	rot_space(Expression<Rotation>::Ptr _space_output)
-	{rot_space( _space_output, FULL_ROTATION,	true);};
 	rot_space(Expression<Rotation>::Ptr _space_output,
-			which_direction_type _which_direction)
-	{rot_space( _space_output, _which_direction,	true);};
+			which_direction_type _which_direction);
+	rot_space(Expression<Rotation>::Ptr _space_output);
 //	rot_space& operator=(rot_space const &s);
 
 	void update_expressions(const std::vector<double>&q,

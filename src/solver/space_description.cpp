@@ -76,8 +76,45 @@ rot_space::rot_space(Expression<Rotation>::Ptr _space_output,
 
 	if (!base_frame)
 			type=type+"_own";
-	//std::cout<<type<<std::endl;
 }
+
+rot_space::rot_space(Expression<Rotation>::Ptr _space_output)
+{
+	which_direction=FULL_ROTATION;
+	space_output=_space_output;
+	base_frame=true;
+		type="Rot";
+		size_of_output=3;
+
+
+};
+rot_space::rot_space(Expression<Rotation>::Ptr _space_output,
+		which_direction_type _which_direction)
+{
+	which_direction=_which_direction;
+	space_output=_space_output;
+	base_frame=true;
+	switch (which_direction) {
+	case FULL_ROTATION:
+		type="Rot";
+		size_of_output=3;
+		break;
+	case ROT_X:
+		type="RotX";
+		size_of_output=1;
+		break;
+	case ROT_Y:
+		type="RotY";
+		size_of_output=1;
+		break;
+	case ROT_Z:
+		type="RotZ";
+		size_of_output=1;
+		break;
+	default:
+		type="ERROR";
+	}
+};
 /*
 rot_space& rot_space::operator=(rot_space const &s)
 {
@@ -93,7 +130,6 @@ void rot_space::update_expressions(const std::vector<double>&q,
 		const std::vector<int> & q_index)
 {
 	space_output->setInputValues(q_index,q);
-	//std::cout<<"OK"<<std::endl;
 }
 void rot_space::update_expressions_rot(const std::vector<KDL::Rotation>&R,
 			const std::vector<int> & q_index)
