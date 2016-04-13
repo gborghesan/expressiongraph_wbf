@@ -13,10 +13,6 @@
 #include <urdf_parser/urdf_parser.h>
 
 
-#include <kdl/frames_io.hpp>
-#include <kdl/tree.hpp>
-#include <urdf/model.h>
-#include <urdf_parser/urdf_parser.h>
 #include <ros/ros.h>
 #include <stdlib.h>
 

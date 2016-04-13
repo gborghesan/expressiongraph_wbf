@@ -1,68 +1,73 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.8.3)
+project(expressiongraph_wbf)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS expressiongraph urdf)
+include_directories( include ${catkin_INCLUDE_DIRS})
 
-rosbuild_init()
 
+
+# external libraries:
 
 execute_process(COMMAND svn co https://projects.coin-or.org/svn/qpOASES/stable/3.0 ${PROJECT_SOURCE_DIR}/external/qpOASES)
 
-# external libraries:
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/external/qpOASES/include)
+
+SET(qpOASES qpOASES)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/external/${qpOASES}/include)
 add_definitions( -D__NO_COPYRIGHT__ )
 ADD_SUBDIRECTORY( external )
 
-
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-rosbuild_add_library(matlab_reporter
-  src/utils/matlab_reporter.cpp)
-  
-rosbuild_add_library(controllers
-  src/controllers/scalar_controllers.cpp
-  src/controllers/rotation_controllers.cpp
-)  
-  
-rosbuild_add_library(space_description
-  src/solver/space_description.cpp)  
-  
-rosbuild_add_library(simple_force_solver
-  src/solver/simple_force_solver.cpp) 
-   
-rosbuild_add_library(velocity_solver
-  src/solver/velocity_solver.cpp)   
-  
-rosbuild_add_library(urdf2Expr
-  src/utils/Urdf2Expr.cpp)   
-   
-
-rosbuild_add_library(expressiongraph_wbf
+add_library(${PROJECT_NAME}
   src/controllers/scalar_controllers.cpp
   src/controllers/rotation_controllers.cpp
   src/solver/space_description.cpp
   src/solver/simple_force_solver.cpp
-  src/solver/velocity_solver.cpp)   
- 
-target_link_libraries(expressiongraph_wbf expressiongraph qpOASES)
+  src/solver/velocity_solver.cpp
+  src/utils/matlab_reporter.cpp
+  src/controllers/scalar_controllers.cpp
+  src/controllers/rotation_controllers.cpp
+  src/solver/space_description.cpp
+  src/solver/simple_force_solver.cpp
+  src/solver/velocity_solver.cpp
+  src/utils/Urdf2Expr.cpp)   
    
-target_link_libraries(matlab_reporter expressiongraph)
-target_link_libraries(controllers expressiongraph)
-target_link_libraries(space_description expressiongraph)
-target_link_libraries(simple_force_solver expressiongraph controllers space_description)
-target_link_libraries(velocity_solver 
-  expressiongraph qpOASES
-  controllers space_description)
-
-target_link_libraries(urdf2Expr expressiongraph urdfdom_model)
 
 
-ADD_SUBDIRECTORY(tests)
+target_link_libraries(${PROJECT_NAME}  qpOASES ${catkin_LIBRARIES})
+   
+
+
+
+catkin_package(
+  INCLUDE_DIRS include ${PROJECT_SOURCE_DIR}/external/${qpOASES}/include
+  LIBRARIES ${PROJECT_NAME}  expressiongraph
+  CATKIN_DEPENDS expressiongraph
+  DEPENDS expressiongraph)
+
+
+
+
+# BUILDING AND LINKING TESTS
+#catkin_add_gtest(tag test/tag.cpp)
+#target_link_libraries(tag ${catkin_LIBRARIES} ${PROJECT_NAME})
+
+
+
+ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/tests) 
+
+
+#OPTION(ENABLE_EXAMPLES "enable compilation of a series of examples" ON)
+install(DIRECTORY external/${qpOASES}/include/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.hpp"
+        PATTERN ".svn" EXCLUDE)
+
+install(DIRECTORY include/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.hpp"
+        PATTERN ".svn" EXCLUDE)
+
+
+#install(DIRECTORY examples/
+#  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/examples
+#  PATTERN ".svn" EXCLUDE)

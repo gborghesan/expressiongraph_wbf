@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <name>expressiongraph_wbf</name>
+  <description>
+    This provides constraint based force and velocity control
+  </description>
+  <version>0.1.0</version>
+    <author>Gianni Borghesan</author>
+     <maintainer email="gianni.borghesan@kuleuven.be">Gianni Borghesan</maintainer>
+ 
+  <license>EUPL v1.1</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>expressiongraph</build_depend>
+<build_depend>urdf</build_depend>
+
+  <run_depend>expressiongraph</run_depend>
+  <test_depend>gtest</test_depend>
+ 
+
+</package>
