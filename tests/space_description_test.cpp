@@ -131,10 +131,7 @@ int main()
 
 	std::cout<<"======TEST ON EE_FRAME========:\n"<<std::endl;
 
-	space_description::Ptr space_pos_own(new pos_space(origin( (w_T_ee)),FULL_POSITION,w_R_ee));
-	space_pos_own->update_expressions(inp,joint_indexes);
-	space_pos_own->compute_jacobian(J2,joint_indexes);
-	std::cout<<"Jacobian POSITION:\n"<<J2<<std::endl;
+
 
 
 /* note, using the base frame=false can be done using the make constant */
@@ -142,10 +139,16 @@ int main()
 	// this is equivalent to the following two lines
 	Expression<Rotation>::Ptr ee_R_ee=(make_constant<Rotation>(w_R_ee))*w_R_ee;
 	space_description::Ptr space_des_rot_own(new rot_space(ee_R_ee));
-
 	space_des_rot_own->update_expressions(inp,joint_indexes);
 	space_des_rot_own->compute_jacobian(J2,joint_indexes);
 	std::cout<<"Jacobian Rotation_in_own:\n"<<J2<<std::endl;
+
+	Expression<Vector>::Ptr ee_P_ee=(make_constant<Rotation>(w_R_ee))*origin( (w_T_ee));
+	space_description::Ptr space_pos_own(new pos_space(ee_P_ee));
+	space_pos_own->update_expressions(inp,joint_indexes);
+	space_pos_own->compute_jacobian(J2,joint_indexes);
+
+	std::cout<<"Jacobian POs_in_own:\n"<<J2<<std::endl;
 	JKDL.changeBase(cartpos.M);
 	cout<<"Expected Full Jacobian\n" <<JKDL.data<<endl;
 }
