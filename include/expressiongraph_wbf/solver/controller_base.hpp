@@ -35,7 +35,7 @@ public:
 	 *
 	 */
 	virtual bool compute_action(Eigen::VectorXd& action)=0;
-	virtual ~controller(){};
+	virtual ~controller(){}
 	int output_size()const{return size_of_output;}
 	std::string which_control()const{return type;}
 } ;

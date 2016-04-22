@@ -61,8 +61,7 @@ class pos_space:public space_description
 {
 private:
 	Expression<Vector>::Ptr space_output;
-	Expression<Rotation>::Ptr new_base;
-	which_position_type which_direction;
+
 	/*
 	 * if base frame is set to false, the space is rotated
 	 * 	in the current frame value of space_output
@@ -71,9 +70,7 @@ private:
 
 
 public:
-	pos_space(Expression<Vector>::Ptr _space_output,
-			which_position_type _which_direction=FULL_POSITION,
-			Expression<Rotation>::Ptr _new_base=Expression<Rotation>::Ptr());
+	pos_space(Expression<Vector>::Ptr _space_output);
 	//pos_space& operator=(pos_space const &s);
 
 	void update_expressions(const std::vector<double>&q,
@@ -96,12 +93,9 @@ private:
 	 * 	in the current frame value of space_output
 	 *  set to false to provide direct force-velocity in ee frame
 	 *  */
-	bool base_frame;
+
 
 public:
-	rot_space(Expression<Rotation>::Ptr _space_output,
-			which_direction_type _which_direction,
-			bool _base_frame);
 	rot_space(Expression<Rotation>::Ptr _space_output,
 			which_direction_type _which_direction);
 	rot_space(Expression<Rotation>::Ptr _space_output);
