@@ -28,7 +28,18 @@ typedef struct constraint
 		priority_level=_priority_level;
 		weight=_weight;
 		ctrl_sec=_ctrl;
-	};
+	}
+	constraint(
+			space_description::Ptr _space,
+			controller::Ptr _ctrl,
+			Expression<double>::Ptr _weight
+	){
+		space=_space;
+		ctrl=_ctrl;
+		priority_level=2;
+		weight=_weight;
+		ctrl_sec=_ctrl;
+	}
 	constraint(
 			space_description::Ptr _space,
 			controller::Ptr _ctrl,
@@ -41,14 +52,14 @@ typedef struct constraint
 		priority_level=_priority_level;
 		weight=_weight;
 		ctrl_sec=_ctrl_sec;
-	};
+	}
 	constraint(const constraint&c){
 		space=c.space;
 		ctrl=c.ctrl;
 		priority_level=c.priority_level;
 		weight=c.weight;
 		ctrl_sec=c.ctrl_sec;
-	};
+	}
 
 }constraint;
 typedef std::map <std::string, constraint::Ptr> c_map_type;

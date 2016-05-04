@@ -18,7 +18,7 @@ simple_force_solver::simple_force_solver(
 	lambda3.resize(3);
 	lambda6.resize(6);
 	n_of_joints=-1;n_of_output=-1;
-};
+}
 simple_force_solver::simple_force_solver(
 		const std::vector<int> & _joint_indexes_for_output,
 		const std::vector<int> & _joint_indexes_input_scalar,
@@ -41,11 +41,11 @@ simple_force_solver::simple_force_solver(){
 	lambda3.resize(3);
 	lambda6.resize(6);
 	n_of_joints=-1;n_of_output=-1;time_index=-1;
-};
+}
 void simple_force_solver::setJointIndex(const std::vector<int>&_joint_indexes){
 	joint_indexes_for_output=_joint_indexes;
 	joint_indexes_input_scalar=_joint_indexes;
-};
+}
 void simple_force_solver::setJointIndex(const std::vector<int>&indx_out,
 		const std::vector<int>&indx_scalar,
 		const std::vector<int>&indx_rot){
@@ -55,7 +55,7 @@ void simple_force_solver::setJointIndex(const std::vector<int>&indx_out,
 }
 
 void simple_force_solver::setTimeIndex(const int _time_index){time_index=_time_index;
-};
+}
 bool simple_force_solver::addConstraint(const std::string& name,
 		const constraint::Ptr &c){
 	if (c_map.find(name)==c_map.end())
@@ -65,11 +65,11 @@ bool simple_force_solver::addConstraint(const std::string& name,
 		return true;
 	}
 	return false;
-};
+}
 bool simple_force_solver::addConstraint(const std::string& name,const constraint &c){
 	constraint::Ptr cp(new constraint(c));
 	return addConstraint(name,cp);
-};
+}
 bool simple_force_solver::RemoveConstraint(const std::string &name){
 	c_map_type::iterator it=c_map.find(name);
 	if (it!=c_map.end())
@@ -79,7 +79,7 @@ bool simple_force_solver::RemoveConstraint(const std::string &name){
 		return true;
 	}
 	return false;
-};
+}
 int simple_force_solver::Prepare(){
 	prepared=false;
 	for (unsigned int i=0;i<joint_indexes_for_output.size();i++)
@@ -102,7 +102,7 @@ int simple_force_solver::Prepare(){
 	lambda_des.resize(n_of_output);
 	prepared=true;
 	return 1;//ok
-};
+}
 
 
 int simple_force_solver::Compute(
@@ -133,6 +133,13 @@ int simple_force_solver::Compute(
 		if(time_index>-1&&time_present)
 			it->second->ctrl->update_time(time,time_index);
 
+		//the weight scales the forces
+		double w=1.0;
+		if(it->second->weight!=NULL)
+		{
+			it->second->weight->setInputValue(time_index,time);
+			w=it->second->weight->value();
+		}
 		switch (it->second->ctrl->output_size()) {
 		case 1:
 			if(!it->second->space->compute_jacobian(J1,joint_indexes_for_output))
@@ -140,7 +147,7 @@ int simple_force_solver::Compute(
 			if(!it->second->ctrl->compute_action(lambda1))
 				return -25;
 			J.row(i)=J1;
-			lambda_des(i)=lambda1(0);
+			lambda_des(i)=lambda1(0)*w;
 			i++;
 			break;
 		case 3:
@@ -155,7 +162,7 @@ int simple_force_solver::Compute(
 		//		cout<<"J after\n"<<J<<endl;
 		//		cout<<"lambda_des before\n"<<lambda_des.transpose()<<endl;
 		//		cout<<"lambda3 \n"<<lambda3.transpose()<<endl;
-				lambda_des.block(i,0,3,1)=lambda3;
+				lambda_des.block(i,0,3,1)=lambda3*w;
 		//		cout<<"lambda_des after\n"<<lambda_des.transpose()	<<endl;
 				i=i+3;
 			break;
@@ -165,13 +172,14 @@ int simple_force_solver::Compute(
 					return -65;
 
 				J.block(0,i,6,n_of_joints)=J6;
-				lambda_des.block(i,0,6,1)=lambda6;
+				lambda_des.block(i,0,6,1)=lambda6*w;
 				i=i+6;
 				break;
 		default:
 			return -100;//size of output not yet implemented
 			break;
 		}
+
 		//cout<<"J total\n"<<J<<endl;
 		//cout<<"lambda_des total\n"<<lambda_des.transpose()<<endl;
 		Jt=J.transpose();
