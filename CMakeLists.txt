@@ -9,7 +9,7 @@ include_directories( include ${catkin_INCLUDE_DIRS})
 
 # external libraries:
 
-execute_process(COMMAND svn co https://projects.coin-or.org/svn/qpOASES/stable/3.0 ${PROJECT_SOURCE_DIR}/external/qpOASES)
+execute_process(COMMAND svn co https://projects.coin-or.org/svn/qpOASES/stable/3.2 ${PROJECT_SOURCE_DIR}/external/qpOASES)
 
 
 SET(qpOASES qpOASES)
