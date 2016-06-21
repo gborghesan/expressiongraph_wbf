@@ -2,16 +2,18 @@
 using namespace KDL;
 namespace wbf {
 
-proportional_rotation_controller::proportional_rotation_controller(Expression<Rotation>::Ptr _p_meas,
+proportional_rotation_controller::proportional_rotation_controller(
+		Expression<Rotation>::Ptr _p_meas,
 		Expression<Rotation>::Ptr _p_des,
 		Expression<double>::Ptr _K,
 		which_direction_type _t
 )
 {
-	p_des=_p_des;
 	p_meas=_p_meas;
+	p_des= _p_des;
 	K=_K;
-	type="Rot";
+
+
 	which_direction=_t;
 	switch (which_direction) {
 	case FULL_ROTATION:
@@ -31,22 +33,28 @@ proportional_rotation_controller::proportional_rotation_controller(Expression<Ro
 		size_of_output=1;
 		break;
 	}
+
+
 }
 void proportional_rotation_controller::update_expressions(
 		const std::vector<double> & q_in,
 		const std::vector<int> & q_index)
 {
 	p_meas->setInputValues(q_index,q_in);
-	//std::cout<<"OK"<<std::endl;
+	p_des->setInputValues(q_index,q_in);
+	K->setInputValues(q_index,q_in);
 }
 void proportional_rotation_controller::update_expressions_rot(
 		const std::vector<KDL::Rotation>&R,
 				const std::vector<int> & q_index)
 {
 	p_meas->setInputValues(q_index,R);
+	p_des->setInputValues(q_index,R);
+	K->setInputValues(q_index,R);
 }
 void proportional_rotation_controller::update_time(double time, int time_index)
 {
+	p_meas->setInputValue(time_index,time);
 	p_des->setInputValue(time_index,time);
 	K->setInputValue(time_index,time);
 }

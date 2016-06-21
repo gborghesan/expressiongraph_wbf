@@ -2,6 +2,7 @@
 #include "expressiongraph_wbf/utils/Urdf2Expr.hpp"
 
 
+#include <ros/package.h>
 
 using namespace wbf;
 using namespace std;
@@ -10,11 +11,12 @@ int main()
 {
 	//set input values
 
+	std::string path = ros::package::getPath("expressiongraph_wbf");
 
 
 	Urdf2Expressions u;
 
-	if(!u.readFromFile("urdf/pr2.urdf"))
+	if(!u.readFromFile(path+"/urdf/pr2.urdf"))
 	{
 		cout<<"cannot find/parse urdf/pr2.urdf"<<endl;
 		return -1;

@@ -1,6 +1,9 @@
 #include "expressiongraph_wbf/solver/constraints.hpp"
 #include "expressiongraph_wbf/utils/Urdf2Expr.hpp"
 
+#include <ros/package.h>
+
+
 
 
 using namespace wbf;
@@ -10,11 +13,17 @@ int main()
 {
 	//set input values
 
+	std::string path = ros::package::getPath("expressiongraph_wbf");
+
 
 
 	Urdf2Expressions u;
 
-	u.readFromFile("urdf/lwr.urdf");
+	if(!u.readFromFile(path+"/urdf/lwr.urdf"))
+	{
+		cout<<"readFromFile failed"<<endl;
+		exit(-1);
+	}
 
 	std::vector<string> names;
 	cout<<"+++++ get names ++++++"<<endl;
@@ -62,7 +71,7 @@ int main()
 
 					cout<<endl;
 		}
-	/*system ("dot -Tpdf urdf_test_total.dot -o urdf_test_total.pdf");
-	system ("evince urdf_test_total.pdf");*/
+	system ("dot -Tpdf urdf_test_total.dot -o urdf_test_total.pdf");
+	system ("evince urdf_test_total.pdf");
 
 }

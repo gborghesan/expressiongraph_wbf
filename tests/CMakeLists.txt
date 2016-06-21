@@ -1,39 +1,10 @@
 #file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/tests)
 
-add_executable(controller_test controller_test.cpp)
-target_link_libraries(controller_test ${PROJECT_NAME})
-#
-add_executable(space_description_test space_description_test.cpp)
-target_link_libraries(space_description_test ${PROJECT_NAME})
-#
-add_executable(constraint_test constraint_test.cpp)
-target_link_libraries(constraint_test  ${PROJECT_NAME})
-
-add_executable(simple_force_solver_test simple_force_solver_test.cpp)
-target_link_libraries(simple_force_solver_test ${PROJECT_NAME})
-
-add_executable(simple_force_solver_test_joint_cnstr simple_force_solver_test_joint_cnstr.cpp)
-target_link_libraries(simple_force_solver_test_joint_cnstr ${PROJECT_NAME})
-
-add_executable(simple_force_solver_test_free_float simple_force_solver_test_free_float.cpp)
-target_link_libraries(simple_force_solver_test_free_float ${PROJECT_NAME})
 
 
-add_executable(simple_force_solver_test_with_time simple_force_solver_test_with_time.cpp)
-target_link_libraries(simple_force_solver_test_with_time ${PROJECT_NAME})
-
-add_executable(simple_force_solver_test_without_time_with_derivative simple_force_solver_test_without_time_with_derivative.cpp)
-target_link_libraries(simple_force_solver_test_without_time_with_derivative  ${PROJECT_NAME})
-
-
-add_executable(velocity_solver_test velocity_solver_test.cpp)
-target_link_libraries(velocity_solver_test ${PROJECT_NAME})
-
-add_executable(velocity_solver_test_freefloat velocity_solver_test_freefloat.cpp)
-target_link_libraries(velocity_solver_test_freefloat ${PROJECT_NAME})
-
+find_package(catkin REQUIRED COMPONENTS  roslib )
 add_executable(parser_test_pr2 parser_test_pr2.cpp)
-target_link_libraries(parser_test_pr2 ${PROJECT_NAME})
+target_link_libraries(parser_test_pr2  ${catkin_LIBRARIES} ${PROJECT_NAME})
 
 add_executable(parser_test_lwr parser_test_lwr.cpp)
-target_link_libraries(parser_test_lwr ${PROJECT_NAME})
+target_link_libraries(parser_test_lwr   ${catkin_LIBRARIES} ${PROJECT_NAME})

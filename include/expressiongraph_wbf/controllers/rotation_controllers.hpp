@@ -17,12 +17,8 @@ public:
 			Expression<Rotation>::Ptr _p_meas ,
 			Expression<Rotation>::Ptr _p_des,
 			Expression<double>::Ptr _K,
-			which_direction_type _type);
-	proportional_rotation_controller(
-			Expression<Rotation>::Ptr _p_meas ,
-			Expression<Rotation>::Ptr _p_des,
-			Expression<double>::Ptr _K	)
-			{proportional_rotation_controller(_p_meas,_p_des,_K,FULL_ROTATION);};
+			which_direction_type _type=FULL_ROTATION);
+
 
 
 
@@ -34,5 +30,5 @@ public:
 	virtual void update_time(double time, int time_index);
 
 };
-};
+}
 #endif

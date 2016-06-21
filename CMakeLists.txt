@@ -3,6 +3,7 @@ project(expressiongraph_wbf)
 
 find_package(catkin REQUIRED)
 find_package(catkin REQUIRED COMPONENTS expressiongraph urdf)
+find_package(rostest REQUIRED)
 include_directories( include ${catkin_INCLUDE_DIRS})
 
 
@@ -54,7 +55,7 @@ catkin_package(
 
 
 ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/tests) 
-
+ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/gtests) 
 
 #OPTION(ENABLE_EXAMPLES "enable compilation of a series of examples" ON)
 install(DIRECTORY external/${qpOASES}/include/

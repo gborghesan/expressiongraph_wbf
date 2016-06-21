@@ -11,3 +11,4 @@ external/cmake_install.cmake
 tests/CMakeFiles/*
 tests/Makefile
 tests/cmake_install.cmake
+gtest/*
