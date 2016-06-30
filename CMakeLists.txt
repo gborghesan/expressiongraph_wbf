@@ -21,23 +21,25 @@ ADD_SUBDIRECTORY( external )
 add_library(${PROJECT_NAME}
   src/controllers/scalar_controllers.cpp
   src/controllers/rotation_controllers.cpp
+  src/solver/constraints.cpp
   src/solver/space_description.cpp
   src/solver/simple_force_solver.cpp
-  src/solver/velocity_solver.cpp
+ # src/solver/velocity_solver.cpp
   src/utils/matlab_reporter.cpp
   src/controllers/scalar_controllers.cpp
   src/controllers/rotation_controllers.cpp
   src/solver/space_description.cpp
-  src/solver/simple_force_solver.cpp
-  src/solver/velocity_solver.cpp
-  src/utils/Urdf2Expr.cpp)   
+  src/utils/Urdf2Expr.cpp)
    
 
 
 target_link_libraries(${PROJECT_NAME}  qpOASES ${catkin_LIBRARIES})
    
 
+# these lines have the only practical effects to see the include dir in qtcreator Project view
 
+FILE(GLOB_RECURSE LibFiles "include/*.hpp")
+add_custom_target(headers SOURCES ${LibFiles})
 
 catkin_package(
   INCLUDE_DIRS include ${PROJECT_SOURCE_DIR}/external/${qpOASES}/include
@@ -55,7 +57,7 @@ catkin_package(
 
 
 ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/tests) 
-ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/gtests) 
+ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/gtests)
 
 #OPTION(ENABLE_EXAMPLES "enable compilation of a series of examples" ON)
 install(DIRECTORY external/${qpOASES}/include/

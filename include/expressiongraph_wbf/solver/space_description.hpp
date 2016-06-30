@@ -29,11 +29,11 @@ public:
 			const std::vector<int> & q_index)=0;
 	virtual bool compute_jacobian(Eigen::MatrixXd& J_partial,
 			const std::vector<int> index_of_variables)=0;
-	virtual ~space_description(){};
+	virtual ~space_description(){}
 
 
 
-	int  output_size() const{return size_of_output;} ;
+	int  output_size() const{return size_of_output;}
 	std::string  which_control() const{return type;}
 } ;
 

@@ -13,6 +13,8 @@ velocity_solver::velocity_solver(
 					double _regularization_factor,
 					int _nWSR){
 
+
+
 	joint_indexes_for_output=_joint_indexes;
 	joint_indexes_input_scalar=_joint_indexes;
 	time_index=_time_index;

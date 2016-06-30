@@ -19,171 +19,262 @@ using namespace KDL;
 //run with ```catkin_make run_tests_expressiongraph_wbf```
 
 // Declare a test
-TEST(constraintTests, checkConstraintValidity)
-{
 
-	FOUR_DOF_ROBOT;
-	Expression<double>::Ptr scalar_des=Constant(0.1);
-	Expression<double>::Ptr gain=Constant(3.1);
-	controller::Ptr ctrl(new proportional_scalar_controller(w_x_ee,scalar_des,gain));
-	space_description::Ptr space(new scalar_space(w_x_ee));
-	space_description::Ptr spaceR(new rot_space(w_R_ee));
-
-	constraint c(space,ctrl);
-	constraint::Ptr cp(new constraint (space,ctrl));
-	constraint::Ptr cRp(new constraint (spaceR,ctrl));
-	ASSERT_TRUE(check_constraint_validity(c));
-	ASSERT_TRUE(check_constraint_validity(cp));
-	ASSERT_FALSE(check_constraint_validity(cRp));
-
-}
-TEST(constraintTests, scalarProportionalController)
-{
-	FOUR_DOF_ROBOT;
-	controller::Ptr ctrl(
-				new proportional_scalar_controller(
-					w_x_ee,Constant(0.0),Constant(0.3)));
-	ctrl->update_expressions(inp,joint_indexes);
-	Eigen::VectorXd res(1);
-	ctrl->compute_action(res);
-
-	ASSERT_TRUE(ctrl->compute_action(res));
-	ASSERT_NEAR(res(0), -0.068483213562657588,0.00001);
-}
-#include "kdl/frames_io.hpp"
-TEST(constraintTests, RotationalProportionalController)
-{
-	FOUR_DOF_ROBOT;
-
-	controller::Ptr ctrlR(
-				new proportional_rotation_controller
-				(w_R_ee,
-				 Constant(KDL::Rotation::Identity()),
-				 Constant(1.0)));
-
-	ctrlR->update_expressions(inp,joint_indexes);
-	Eigen::VectorXd resR(3);
-	ASSERT_TRUE(ctrlR->compute_action(resR));
-
-	Eigen::VectorXd resRexp(3), error(3);
-	resRexp<<-2.65902,
-			 -1.23848,
-			 0.900128;
-
-	error=resR-resRexp;
-	ASSERT_NEAR(error.norm(), 0,0.00001);
-}
-
-TEST(constraintTests, spaceDescriptionScalar)
-{
-	FOUR_DOF_ROBOT;
-	FOUR_DOF_KDL_ROBOT;
-
-	Eigen::MatrixXd J(1,4), JErr(1,4);
-
-	space_description::Ptr space_des_scalar_x(new scalar_space(w_x_ee));
-	space_description::Ptr space_des_scalar_y(new scalar_space(w_y_ee));
-	space_description::Ptr space_des_scalar_z(new scalar_space(w_z_ee));
-	space_des_scalar_x->update_expressions(inp,joint_indexes);
-	space_des_scalar_y->update_expressions(inp,joint_indexes);
-	space_des_scalar_z->update_expressions(inp,joint_indexes);
-
-
-	ASSERT_TRUE(space_des_scalar_x->compute_jacobian(J,joint_indexes));
-	JErr=JKDL.data.row(0)-J;
-	ASSERT_NEAR(JErr.norm(), 0,0.000001);
-
-	ASSERT_TRUE(space_des_scalar_y->compute_jacobian(J,joint_indexes));
-	JErr=JKDL.data.row(1)-J;
-	ASSERT_NEAR(JErr.norm(), 0,0.000001);
-
-	ASSERT_TRUE(space_des_scalar_z->compute_jacobian(J,joint_indexes));
-	JErr=JKDL.data.row(2)-J;
-	ASSERT_NEAR(JErr.norm(), 0,0.000001);
-
-}
-
-TEST(constraintTests, spaceDescriptionRotation)
+TEST(constraintTests, allCostraintsInLevelTwo)
 {
 	FOUR_DOF_ROBOT;
 	FOUR_DOF_KDL_ROBOT;
 
 
-	Eigen::MatrixXd J1(1,4), J1Err(1,4);
-	Eigen::MatrixXd J3(3,4), J3Err(3,4);
+	VariableType<double>::Ptr scalarDesLower,scalarDesUpper;
+	std::vector<int> ndx;
+	int time_index=0;
+	ndx.push_back(time_index);//index of time
+	double lVal=-0.2, uVal=+0.2;
+	scalarDesLower = Variable<double>(ndx);
+	scalarDesLower->setValue(lVal);//value of set-point
+	scalarDesLower->setJacobian(time_index,0.0);//used for feed-forward
+	scalarDesUpper = Variable<double>(ndx);
+	scalarDesUpper->setValue(uVal);//value of set-point
+	scalarDesUpper->setJacobian(time_index,0.0);//used for feed-forward
 
-	space_description::Ptr space_des_rot3, space_des_rotx,space_des_roty,space_des_rotz;
+	//build  constraints
+	const double K=10;
+	space_description::Ptr space_x(new scalar_space(w_x_ee));
+	space_description::Ptr space_y(new scalar_space(w_y_ee));
+	space_description::Ptr space_z(new scalar_space(w_z_ee));
 
-	space_des_rot3=space_description::Ptr(new rot_space(w_R_ee));
-	space_des_rotx=space_description::Ptr(new rot_space(w_R_ee,ROT_X));
-	space_des_roty=space_description::Ptr(new rot_space(w_R_ee,ROT_Y));
-	space_des_rotz=space_description::Ptr(new rot_space(w_R_ee,ROT_Z));
+	Expression<double>::Ptr gain=Constant(K);
 
-	space_des_rot3->update_expressions(inp,joint_indexes);
-	space_des_rotx->update_expressions(inp,joint_indexes);
-	space_des_roty->update_expressions(inp,joint_indexes);
-	space_des_rotz->update_expressions(inp,joint_indexes);
+	controller::Ptr ctrl_x_u(new proportional_scalar_controller(w_x_ee,scalarDesUpper,gain));
+	controller::Ptr ctrl_y_u(new proportional_scalar_controller(w_y_ee,scalarDesUpper,gain));
+	controller::Ptr ctrl_z_u(new proportional_scalar_controller(w_z_ee,scalarDesUpper,gain));
+	controller::Ptr ctrl_x_l(new proportional_scalar_controller(w_x_ee,scalarDesLower,gain));
+	controller::Ptr ctrl_y_l(new proportional_scalar_controller(w_y_ee,scalarDesLower,gain));
+	controller::Ptr ctrl_z_l(new proportional_scalar_controller(w_z_ee,scalarDesLower,gain));
+	unsigned int priority_level=2;
+	constraint::Ptr c_x(new constraint (space_x,ctrl_x_l,ctrl_x_u,priority_level,Constant(1.0)));
+	constraint::Ptr c_y(new constraint (space_y,ctrl_y_l,ctrl_y_u,priority_level,Constant(2.0)));
+	constraint::Ptr c_z(new constraint (space_z,ctrl_z_l,ctrl_z_u,priority_level,Constant(3.0)));
 
-	ASSERT_TRUE(space_des_rot3->compute_jacobian(J3,joint_indexes));
-	J3Err=JKDL.data.block(3,0,3,4)-J3;
+
+	constraints::Ptr cnstr(new constraints(joint_indexes));
+	ASSERT_TRUE(cnstr->addConstraint("xDir",c_x));
+	ASSERT_TRUE(cnstr->addConstraint("yDir",c_y));
+	ASSERT_TRUE(cnstr->addConstraint("zDir",c_z));
+	bool noExceptionRaised=true;
+
+	Eigen::VectorXd Wqdiag;
+	std::vector<unsigned int> priorities;
+
+	ASSERT_FALSE(cnstr->getQweights(Wqdiag));
+	ASSERT_FALSE(cnstr->getPriorityCardinality(priorities));
+	cnstr->setTimeIndex(time_index);
+
+	try{cnstr->Prepare();}
+	catch (constraintException& e) {
+		noExceptionRaised=false;
+	}
+	ASSERT_TRUE(noExceptionRaised);
+
+
+	ASSERT_TRUE(cnstr->getPriorityCardinality(priorities));
+	ASSERT_EQ(priorities.size(),3);
+	ASSERT_EQ(priorities[0],0);
+	ASSERT_EQ(priorities[1],0);
+	ASSERT_EQ(priorities[2],3);
+
+
+	ASSERT_TRUE(cnstr->getQweights(Wqdiag));
+	ASSERT_EQ(Wqdiag.size(),joint_indexes.size());
+
+	double currentTime=0;
+	bool timePresent=true;
+	ASSERT_EQ(cnstr->computeJacobianAndBounds(
+			inp,currentTime,timePresent),0);
+
+	std::vector<Eigen::MatrixXd> JacobianPerPriority;
+	ASSERT_TRUE(cnstr->getJacobian(JacobianPerPriority));
+	ASSERT_EQ(JacobianPerPriority.size(),3);
+	ASSERT_EQ(JacobianPerPriority[0].rows(),0);
+	ASSERT_EQ(JacobianPerPriority[0].cols(),joint_indexes.size());
+	ASSERT_EQ(JacobianPerPriority[1].rows(),0);
+	ASSERT_EQ(JacobianPerPriority[1].cols(),joint_indexes.size());
+	ASSERT_EQ(JacobianPerPriority[2].rows(),3);
+	ASSERT_EQ(JacobianPerPriority[2].cols(),joint_indexes.size());
+
+
+
+	Eigen::MatrixXd J3Err(3,4);
+	J3Err=JKDL.data.block(0,0,3,4)-JacobianPerPriority[2];
 	ASSERT_NEAR(J3Err.norm(), 0,0.000001);
 
-	ASSERT_TRUE(space_des_rotx->compute_jacobian(J1,joint_indexes));
-	J1Err=JKDL.data.row(3)-J1;
-	ASSERT_NEAR(J1Err.norm(), 0,0.000001);
+	std::vector<Eigen::VectorXd> lowerBoundPerPriority,upperBoundPerPriority;
+	ASSERT_TRUE(cnstr->getLowerBounds(lowerBoundPerPriority));
+	ASSERT_TRUE(cnstr->getUpperBounds(upperBoundPerPriority));
+	ASSERT_EQ(lowerBoundPerPriority.size(),3);
+	ASSERT_EQ(lowerBoundPerPriority[0].size(),0);
+	ASSERT_EQ(lowerBoundPerPriority[1].size(),0);
+	ASSERT_EQ(lowerBoundPerPriority[2].size(),3);
 
-	ASSERT_TRUE(space_des_roty->compute_jacobian(J1,joint_indexes));
-	J1Err=JKDL.data.row(4)-J1;
-	ASSERT_NEAR(J1Err.norm(), 0,0.000001);
 
-	ASSERT_TRUE(space_des_rotz->compute_jacobian(J1,joint_indexes));
-	J1Err=JKDL.data.row(5)-J1;
-	ASSERT_NEAR(J1Err.norm(), 0,0.000001);
+	double velExpectedLower_x=K*(lVal-cartpos.p.x());
+	double velExpectedLower_y=K*(lVal-cartpos.p.y());
+	double velExpectedLower_z=K*(lVal-cartpos.p.z());
+	double velExpectedUpper_x=K*(uVal-cartpos.p.x());
+	double velExpectedUpper_y=K*(uVal-cartpos.p.y());
+	double velExpectedUpper_z=K*(uVal-cartpos.p.z());
+
+	ASSERT_NEAR(velExpectedLower_x, lowerBoundPerPriority[2](0),0.000001);
+	ASSERT_NEAR(velExpectedLower_y, lowerBoundPerPriority[2](1),0.000001);
+	ASSERT_NEAR(velExpectedLower_z, lowerBoundPerPriority[2](2),0.000001);
+	ASSERT_NEAR(velExpectedUpper_x, upperBoundPerPriority[2](0),0.000001);
+	ASSERT_NEAR(velExpectedUpper_y, upperBoundPerPriority[2](1),0.000001);
+	ASSERT_NEAR(velExpectedUpper_z, upperBoundPerPriority[2](2),0.000001);
+
+	std::vector<Eigen::VectorXd> WyPerPriority ;
+	ASSERT_TRUE(cnstr->getYweights(WyPerPriority));
+	ASSERT_EQ(WyPerPriority.size(),3);
+	ASSERT_EQ(WyPerPriority[0].size(),0);
+	ASSERT_EQ(WyPerPriority[1].size(),0);
+	ASSERT_EQ(WyPerPriority[2].size(),3);
+
+	ASSERT_NEAR( WyPerPriority[2](0),1,0.000001);
+	ASSERT_NEAR( WyPerPriority[2](1),2,0.000001);
+	ASSERT_NEAR( WyPerPriority[2](2),3,0.000001);
 }
 
 
-TEST(constraintTests, spaceDescriptionRotationOwnFrame)
+
+TEST(constraintTests, allCostraintsInLevelTwoTimeUsed)
 {
 	FOUR_DOF_ROBOT;
 	FOUR_DOF_KDL_ROBOT;
 
-	JKDL.changeBase(cartpos.M);
+
+	VariableType<double>::Ptr scalarDesLower,scalarDesUpper;
+	std::vector<int> ndx;
+	int time_index=0;
+	ndx.push_back(time_index);//index of time
+	double lVal=-0.2, uVal=+0.2;
+	scalarDesLower = Variable<double>(ndx);
+	scalarDesLower->setValue(lVal);//value of set-point
+	scalarDesLower->setJacobian(time_index,0.0);//used for feed-forward
+	scalarDesUpper = Variable<double>(ndx);
+	scalarDesUpper->setValue(uVal);//value of set-point
+	scalarDesUpper->setJacobian(time_index,0.0);//used for feed-forward
+
+	//build  constraints
+	const double K=10;
+	space_description::Ptr space_x(new scalar_space(w_x_ee));
+	space_description::Ptr space_y(new scalar_space(w_y_ee));
+	space_description::Ptr space_z(new scalar_space(w_z_ee));
+
+	Expression<double>::Ptr gain=Constant(K);
+
+	controller::Ptr ctrl_x_u(new proportional_scalar_controller(w_x_ee,scalarDesUpper,gain));
+	controller::Ptr ctrl_y_u(new proportional_scalar_controller(w_y_ee,scalarDesUpper,gain));
+	controller::Ptr ctrl_z_u(new proportional_scalar_controller(w_z_ee,scalarDesUpper,gain));
+	controller::Ptr ctrl_x_l(new proportional_scalar_controller(w_x_ee,scalarDesLower,gain));
+	controller::Ptr ctrl_y_l(new proportional_scalar_controller(w_y_ee,scalarDesLower,gain));
+	controller::Ptr ctrl_z_l(new proportional_scalar_controller(w_z_ee,scalarDesLower,gain));
+	unsigned int priority_level=2;
+	constraint::Ptr c_x(new constraint (space_x,ctrl_x_l,ctrl_x_u,priority_level,input(time_index)*Constant(1.0)));
+	constraint::Ptr c_y(new constraint (space_y,ctrl_y_l,ctrl_y_u,priority_level,input(time_index)*Constant(2.0)));
+	constraint::Ptr c_z(new constraint (space_z,ctrl_z_l,ctrl_z_u,priority_level,input(time_index)*Constant(3.0)));
 
 
-	Expression<Rotation>::Ptr ee_R_ee=(make_constant<Rotation>(w_R_ee))*w_R_ee;
+	constraints::Ptr cnstr(new constraints(joint_indexes));
+	ASSERT_TRUE(cnstr->addConstraint("xDir",c_x));
+	ASSERT_TRUE(cnstr->addConstraint("yDir",c_y));
+	ASSERT_TRUE(cnstr->addConstraint("zDir",c_z));
+	bool noExceptionRaised=true;
+
+	Eigen::VectorXd Wqdiag;
+	std::vector<unsigned int> priorities;
+
+	ASSERT_FALSE(cnstr->getQweights(Wqdiag));
+	ASSERT_FALSE(cnstr->getPriorityCardinality(priorities));
+	cnstr->setTimeIndex(time_index);
+
+	try{cnstr->Prepare();}
+	catch (constraintException& e) {
+		noExceptionRaised=false;
+	}
+	ASSERT_TRUE(noExceptionRaised);
 
 
-	Eigen::MatrixXd J1(1,4), J1Err(1,4);
-	Eigen::MatrixXd J3(3,4), J3Err(3,4);
+	ASSERT_TRUE(cnstr->getPriorityCardinality(priorities));
+	ASSERT_EQ(priorities.size(),3);
+	ASSERT_EQ(priorities[0],0);
+	ASSERT_EQ(priorities[1],0);
+	ASSERT_EQ(priorities[2],3);
 
-	space_description::Ptr space_des_rot3, space_des_rotx,space_des_roty,space_des_rotz;
 
-	space_des_rot3=space_description::Ptr(new rot_space(ee_R_ee));
-	space_des_rotx=space_description::Ptr(new rot_space(ee_R_ee,ROT_X));
-	space_des_roty=space_description::Ptr(new rot_space(ee_R_ee,ROT_Y));
-	space_des_rotz=space_description::Ptr(new rot_space(ee_R_ee,ROT_Z));
+	ASSERT_TRUE(cnstr->getQweights(Wqdiag));
+	ASSERT_EQ(Wqdiag.size(),joint_indexes.size());
 
-	space_des_rot3->update_expressions(inp,joint_indexes);
-	space_des_rotx->update_expressions(inp,joint_indexes);
-	space_des_roty->update_expressions(inp,joint_indexes);
-	space_des_rotz->update_expressions(inp,joint_indexes);
+	double currentTime=1;
+	bool timePresent=true;
+	ASSERT_EQ(cnstr->computeJacobianAndBounds(
+			inp,currentTime,timePresent),0);
 
-	ASSERT_TRUE(space_des_rot3->compute_jacobian(J3,joint_indexes));
-	J3Err=JKDL.data.block(3,0,3,4)-J3;
+	std::vector<Eigen::MatrixXd> JacobianPerPriority;
+	ASSERT_TRUE(cnstr->getJacobian(JacobianPerPriority));
+	ASSERT_EQ(JacobianPerPriority.size(),3);
+	ASSERT_EQ(JacobianPerPriority[0].rows(),0);
+	ASSERT_EQ(JacobianPerPriority[0].cols(),joint_indexes.size());
+	ASSERT_EQ(JacobianPerPriority[1].rows(),0);
+	ASSERT_EQ(JacobianPerPriority[1].cols(),joint_indexes.size());
+	ASSERT_EQ(JacobianPerPriority[2].rows(),3);
+	ASSERT_EQ(JacobianPerPriority[2].cols(),joint_indexes.size());
+
+
+
+	Eigen::MatrixXd J3Err(3,4);
+	J3Err=JKDL.data.block(0,0,3,4)-JacobianPerPriority[2];
 	ASSERT_NEAR(J3Err.norm(), 0,0.000001);
 
-	ASSERT_TRUE(space_des_rotx->compute_jacobian(J1,joint_indexes));
-	J1Err=JKDL.data.row(3)-J1;
-	ASSERT_NEAR(J1Err.norm(), 0,0.000001);
+	std::vector<Eigen::VectorXd> lowerBoundPerPriority,upperBoundPerPriority;
+	ASSERT_TRUE(cnstr->getLowerBounds(lowerBoundPerPriority));
+	ASSERT_TRUE(cnstr->getUpperBounds(upperBoundPerPriority));
+	ASSERT_EQ(lowerBoundPerPriority.size(),3);
+	ASSERT_EQ(lowerBoundPerPriority[0].size(),0);
+	ASSERT_EQ(lowerBoundPerPriority[1].size(),0);
+	ASSERT_EQ(lowerBoundPerPriority[2].size(),3);
 
-	ASSERT_TRUE(space_des_roty->compute_jacobian(J1,joint_indexes));
-	J1Err=JKDL.data.row(4)-J1;
-	ASSERT_NEAR(J1Err.norm(), 0,0.000001);
 
-	ASSERT_TRUE(space_des_rotz->compute_jacobian(J1,joint_indexes));
-	J1Err=JKDL.data.row(5)-J1;
-	ASSERT_NEAR(J1Err.norm(), 0,0.000001);
+	double velExpectedLower_x=K*(lVal-cartpos.p.x());
+	double velExpectedLower_y=K*(lVal-cartpos.p.y());
+	double velExpectedLower_z=K*(lVal-cartpos.p.z());
+	double velExpectedUpper_x=K*(uVal-cartpos.p.x());
+	double velExpectedUpper_y=K*(uVal-cartpos.p.y());
+	double velExpectedUpper_z=K*(uVal-cartpos.p.z());
+
+	ASSERT_NEAR(velExpectedLower_x, lowerBoundPerPriority[2](0),0.000001);
+	ASSERT_NEAR(velExpectedLower_y, lowerBoundPerPriority[2](1),0.000001);
+	ASSERT_NEAR(velExpectedLower_z, lowerBoundPerPriority[2](2),0.000001);
+	ASSERT_NEAR(velExpectedUpper_x, upperBoundPerPriority[2](0),0.000001);
+	ASSERT_NEAR(velExpectedUpper_y, upperBoundPerPriority[2](1),0.000001);
+	ASSERT_NEAR(velExpectedUpper_z, upperBoundPerPriority[2](2),0.000001);
+
+	std::vector<Eigen::VectorXd> WyPerPriority ;
+	ASSERT_TRUE(cnstr->getYweights(WyPerPriority));
+	ASSERT_EQ(WyPerPriority.size(),3);
+	ASSERT_EQ(WyPerPriority[0].size(),0);
+	ASSERT_EQ(WyPerPriority[1].size(),0);
+	ASSERT_EQ(WyPerPriority[2].size(),3);
+	for (currentTime=2;currentTime<10.0;currentTime+=1.0)
+	{
+		ASSERT_EQ(cnstr->computeJacobianAndBounds(
+					  inp,currentTime,timePresent),0);
+		ASSERT_TRUE(cnstr->getYweights(WyPerPriority));
+		ASSERT_NEAR( WyPerPriority[2](0),1*currentTime,0.000001);
+		ASSERT_NEAR( WyPerPriority[2](1),2*currentTime,0.000001);
+		ASSERT_NEAR( WyPerPriority[2](2),3*currentTime,0.000001);
+	}
 }
+
 
 
 int main(int argc, char **argv){

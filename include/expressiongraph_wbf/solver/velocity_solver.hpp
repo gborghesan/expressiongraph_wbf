@@ -13,6 +13,7 @@ namespace wbf {
 #define HUGE_VALUE 1e20
 class velocity_solver{
 private:
+
 	std::vector<int> joint_indexes_for_output;
 	std::vector<int> joint_indexes_input_scalar;
 	std::vector<int> joint_indexes_input_rotation;
