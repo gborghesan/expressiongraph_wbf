@@ -6,153 +6,44 @@ using namespace std;
 using namespace KDL;
 
 namespace wbf {
-velocity_solver::velocity_solver(
-		const std::vector<int>& _joint_indexes,
-					const int _time_index,
-					double _max_cpu_time,
-					double _regularization_factor,
-					int _nWSR){
 
 
-
-	joint_indexes_for_output=_joint_indexes;
-	joint_indexes_input_scalar=_joint_indexes;
-	time_index=_time_index;
-	prepared=false;
-	ydotlb1.resize(1);	ydotlb3.resize(3);	ydotlb6.resize(6);
-	ydotub1.resize(1);	ydotub3.resize(3);	ydotub6.resize(6);
-	n_of_joints=-1;n_of_output=-1;
-	n_of_slack=-1;
-	n_of_variables=-1;
-	firsttime=true;
-	regularization_factor=_regularization_factor;
-	nWSR  =_nWSR  ;
-	cputime =_max_cpu_time;
-
-
-
-};
-velocity_solver::velocity_solver(
-		std::vector<int> _joint_indexes_for_output,
-		std::vector<int> _joint_indexes_input_scalar,
-		std::vector<int> _joint_indexes_input_rotation,
-					const int _time_index,
-					double _max_cpu_time,
-					double _regularization_factor,
-					int _nWSR){
-
-	joint_indexes_for_output=_joint_indexes_for_output;
-	joint_indexes_input_scalar=_joint_indexes_input_scalar;
-	joint_indexes_input_rotation=_joint_indexes_input_rotation;
-	time_index=_time_index;
-	prepared=false;
-	ydotlb1.resize(1);	ydotlb3.resize(3);	ydotlb6.resize(6);
-	ydotub1.resize(1);	ydotub3.resize(3);	ydotub6.resize(6);
-	n_of_joints=-1;n_of_output=-1;
-	n_of_slack=-1;
-	n_of_variables=-1;
-	firsttime=true;
-	regularization_factor=_regularization_factor;
-	nWSR  =_nWSR  ;
-	cputime =_max_cpu_time;
-
-
-
-};
-
-
-velocity_solver::velocity_solver(){
-	prepared=false;
-	firsttime=true;
-	ydotlb1.resize(1);	ydotlb3.resize(3);	ydotlb6.resize(6);
-	ydotub1.resize(1);	ydotub3.resize(3);	ydotub6.resize(6);
-	n_of_joints=-1;n_of_output=-1;time_index=-1;
-	n_of_slack=-1;
-	n_of_variables=-1;
-
-	nWSR  =100  ;
-	cputime =0.01;
-	regularization_factor=0.001;
-
-};
-
-void velocity_solver::setJointIndex(const std::vector<int>&_joint_indexes){
-	joint_indexes_for_output=_joint_indexes;
-	joint_indexes_input_scalar=_joint_indexes;
-	prepared=false;
-};
-void velocity_solver::setJointIndex(const std::vector<int>&indx_out,
-		const std::vector<int>&indx_scalar,
-		const std::vector<int>&indx_rot){
-	joint_indexes_for_output=indx_out;
-	joint_indexes_input_scalar=indx_scalar;
-	joint_indexes_input_rotation=indx_rot;
-	prepared=false;
-};
-void velocity_solver::setTimeIndex(const int _time_index){time_index=_time_index;
-};
-bool velocity_solver::addConstraint(const std::string& name,
-		const constraint::Ptr &c){
-	if (c_map.find(name)==c_map.end())
-	{
-		c_map[name]=c;
-		prepared=false;
-		return true;
-	}
-	return false;
-};
-bool velocity_solver::addConstraint(const std::string& name,const constraint &c){
-	constraint::Ptr cp(new constraint(c));
-	return addConstraint(name,cp);
-};
-bool velocity_solver::RemoveConstraint(const std::string &name){
-	c_map_type::iterator it=c_map.find(name);
-	if (it!=c_map.end())
-	{
-		c_map.erase(it);
-		prepared=false;
-		return true;
-	}
-	return false;
-};
 int velocity_solver::Prepare(){
 	prepared=false;
 
-	for (unsigned int i=0;i<joint_indexes_for_output.size();i++)
-		if(joint_indexes_for_output[i]==time_index || joint_indexes_for_output[i]<0)
-			return -1;//index problem
-	for (unsigned int i=0;i<joint_indexes_input_scalar.size();i++)
-			if(joint_indexes_input_scalar[i]==time_index || joint_indexes_input_scalar[i]<0)
-				return -1;//index problem
-	for (unsigned int i=0;i<joint_indexes_input_rotation.size();i++)
-			if(joint_indexes_input_rotation[i]==time_index || joint_indexes_input_rotation[i]<0)
-				return -1;//index problem
-	c_map_type::iterator it;
+
+	cnstr->Prepare();
 	n_of_output=0;
-	n_of_slack=0;
-	n_of_joints=joint_indexes_for_output.size();
+	n_of_joints=0;
 
-	if(Wqdiag.size()!=n_of_joints)
-		//in case is not initialized..
-		Wqdiag=Eigen::VectorXd::Ones(n_of_joints);
+	if(!cnstr->getPriorityCardinality(constraintsPerPriority)) return -1;
 
-	for (it=c_map.begin();it!=c_map.end();it++)
-	{
-		bool ok=check_constraint_validity(it->second);
-		if(!ok) return -2;//mismatch size of controller/size of space
-		n_of_output+=it->second->ctrl->output_size();
-		if(it->second->priority_level==2)
-			n_of_slack+=it->second->ctrl->output_size();
+
+	if(!cnstr->getQweights(Wq)) return -1;
+	if(constraintsPerPriority.size()>3) return -2;
+	if(constraintsPerPriority[0]!=0){
+
+		for (int i=0; i<constraintsPerPriority.size();i++)
+			cout<<i<<" constraintsPerPriority\t"<<constraintsPerPriority[i]<<endl;
+		return -3;
 	}
+	JPerPriority.resize(constraintsPerPriority.size());
+	LBPerPriority.resize(constraintsPerPriority.size());
+	UBPerPriority.resize(constraintsPerPriority.size());
+	constraintsPerPriorityCheck.resize(constraintsPerPriority.size());
 
-	n_of_variables=n_of_slack+n_of_joints;
-	//J.resize(n_of_output,n_of_joints);
-	J1.resize(1,n_of_joints);
-	J3.resize(3,n_of_joints);
-	J6.resize(6,n_of_joints);
-	J.resize(n_of_output,n_of_joints);
-
-
+	for (int i=0;i<constraintsPerPriority.size();i++){
+		if(constraintsPerPriority[i]!=0){
+			n_of_output+=constraintsPerPriority[i];
+			JPerPriority[i].resize(constraintsPerPriority[i],n_of_joints);
+			LBPerPriority[i].resize(constraintsPerPriority[i]);
+			UBPerPriority[i].resize(constraintsPerPriority[i]);
+		}
+	}
+	n_of_joints=Wq.size();
+	n_of_slack=constraintsPerPriority[2];
+	Wy.resize(n_of_slack);
+	n_of_variables=n_of_joints+n_of_slack;
 
 
 	H         = Eigen::MatrixXd::Identity(n_of_variables,n_of_variables);
@@ -166,32 +57,14 @@ int velocity_solver::Prepare(){
 	solution  =Eigen::VectorXd::Zero(n_of_variables);
 	J.resize(n_of_output,n_of_joints);
 	J_slack   =Eigen::MatrixXd::Zero(n_of_output,n_of_slack);
+	J_slack.block(0,constraintsPerPriority[1],n_of_slack,n_of_slack)
+		  =Eigen::MatrixXd::Identity(n_of_slack,n_of_slack);
 
-	//J slack can be computed now, as it is not going to change during execution
-	//J Slack has a one when the constraint is 2nd priority.
-	unsigned int i_y=0, i_s=0;
-	for (it=c_map.begin();it!=c_map.end();it++)
-	{
-	/*	if(i_s>=n_of_slack)
-			cout<<"ERROR: I_S is:"<<i_s<<" n_of_slack is:"<<n_of_slack<<endl;
-		if(i_y>=n_of_slack)
-			cout<<"ERROR: I_Y is:"<<i_y<<" n_of_output is:"<<n_of_output<<endl;*/
-
-		unsigned int size=it->second->ctrl->output_size();
-		if(it->second->priority_level==2)
-		{
-			//add an I matrix of size "size" starting from (i_s,i_y)
-			J_slack.block(i_y,i_s,size,size)
-							=Eigen::MatrixXd::Identity(size,size);
-			i_s+=size;
-		}
-		i_y+=size;
-	}
 
 	//in H we can already put the joint weights
 	//
 
-	H.block(0,0,n_of_joints,n_of_joints)=Eigen::MatrixXd(Wqdiag.asDiagonal())*regularization_factor;
+	H.block(0,0,n_of_joints,n_of_joints)=Eigen::MatrixXd(Wq.asDiagonal())*regularization_factor;
 
 
 	//Jt.resize(n_of_joints,n_of_output);
@@ -202,93 +75,46 @@ int velocity_solver::Prepare(){
 	firsttime=true;
 	return 1;//ok
 };
-void velocity_solver::setQweights(const Eigen::VectorXd& _Wqdiag)
-{	Wqdiag=_Wqdiag; prepared=false;}
 
 int velocity_solver::Compute(const std::vector<double> &q_in, const std::vector<Rotation> &R_in, double time,
 		Eigen::VectorXd &qdot_out,bool time_present){
 
-	if (R_in.size()!=joint_indexes_input_rotation.size()) return -15;
-	if (q_in.size()!=joint_indexes_input_scalar.size()) return -16;
-	if (!prepared) return -11;
-	if ((q_in.size()+R_in.size()*3)!=n_of_joints) return -12;
+	if (!prepared)
+	{
+		cout<<"not prepared"<<endl;
+		return -1;
+	}
+
 	if (qdot_out.size()!=n_of_joints) return -13;
 
-	int i=0;
-	c_map_type::iterator it;
-	for (it=c_map.begin();it!=c_map.end();it++)
-	{
-		it->second->ctrl->update_expressions(q_in,joint_indexes_input_scalar);
-		it->second->ctrl_sec->update_expressions(q_in,joint_indexes_input_scalar);
-		it->second->space->update_expressions(q_in,joint_indexes_input_scalar);
+	if (!cnstr->getPriorityCardinality(constraintsPerPriorityCheck)) return -1;
+	if (constraintsPerPriorityCheck!=constraintsPerPriority)
+		return -14;
+	int ret;
 
-		it->second->ctrl->update_expressions_rot(R_in,joint_indexes_input_rotation);
-		it->second->ctrl_sec->update_expressions_rot(R_in,joint_indexes_input_rotation);
-		it->second->space->update_expressions_rot(R_in,joint_indexes_input_rotation);
+	ret=cnstr->computeJacobianAndBounds(q_in,R_in,time,time_present);
+	if (ret!=0) return ret;
+	cnstr->getJacobian(JPerPriority);
+	cnstr->getLowerBounds(LBPerPriority);
+	cnstr->getUpperBounds(UBPerPriority);
+	cnstr->getYweights(WyPerPriority);
 
-		if(time_index>-1&&time_present)
-		{
-			it->second->ctrl->update_time(time,time_index);
-			it->second->ctrl_sec->update_time(time,time_index);
-		}
-		switch (it->second->ctrl->output_size()) {
-		case 1:
-			if(!it->second->space->compute_jacobian(J1,joint_indexes_for_output))
-				return -14;
-			if(!it->second->ctrl->compute_action(ydotlb1))
-				return -15;
-			if(!it->second->ctrl_sec->compute_action(ydotub1))
-				return -16;
-			J.row(i)=J1;
-			lbA(i)=ydotlb1(0);
-			ubA(i)=ydotub1(0);
-			i++;
-			break;
-		case 3:
-			if(!it->second->space->compute_jacobian(J3,joint_indexes_for_output))
-				return -34;
-			if(!it->second->ctrl->compute_action(ydotlb3))
-				return -35;
-			if(!it->second->ctrl_sec->compute_action(ydotub3))
-				return -36;
-
-			J.block(0,i,3,n_of_joints)=J3;
-			lbA.block(i,0,3,1)=ydotlb3;
-			ubA.block(i,0,3,1)=ydotub3;
-			i=i+3;
-			break;
-		case 6:
-			if(!it->second->space->compute_jacobian(J6,joint_indexes_for_output))
-				return -64;
-			if(!it->second->ctrl->compute_action(ydotlb6))
-				return -65;
-			if(!it->second->ctrl_sec->compute_action(ydotub6))
-				return -66;
-			J.block(0,i,6,n_of_joints)=J6;
-			lbA.block(i,0,6,1)=ydotlb6;
-			ubA.block(i,0,6,1)=ydotub6;
-			i=i+6;
-			break;
-		default:
-			return -100;//size of output not yet implemented
-			break;
-		}
+	if(constraintsPerPriority[1]!=0){
+		J.block(0,0,constraintsPerPriority[1],n_of_joints)=JPerPriority[1];
+		lbA.block(0,0,constraintsPerPriority[1],1)=LBPerPriority[1];
+		ubA.block(0,0,constraintsPerPriority[1],1)=UBPerPriority[1];
 	}
-	//fill hessian with constraint space weights value
-	unsigned int  i_s=n_of_joints;
-	for (it=c_map.begin();it!=c_map.end();it++)
-		if(it->second->priority_level==2)
-		{
-			;
-			it->second->weight->setInputValue(time_index,time);
-			double w=it->second->weight->value();
 
-			unsigned int size=it->second->ctrl->output_size();
-			//add an I matrix of size "size" starting from (i_y,i_y)
+	if(constraintsPerPriority[2]!=0){
+		J.block(constraintsPerPriority[1],0,constraintsPerPriority[2],n_of_joints)=JPerPriority[2];
+		lbA.block(constraintsPerPriority[1],0,constraintsPerPriority[2],1)=LBPerPriority[2];
+		ubA.block(constraintsPerPriority[1],0,constraintsPerPriority[2],1)=UBPerPriority[2];
+	}
+	A.block(0,0,n_of_output,n_of_joints)=J;
+	A.block(0,n_of_joints,n_of_output,n_of_slack)=J_slack;
 
-			H.block(i_s,i_s,size,size)=Eigen::MatrixXd::Identity(size,size)*w;
-			i_s+=size;
-		}
+	Wy=WyPerPriority[2];
+	H.block(n_of_joints,n_of_joints,n_of_slack,n_of_slack)=Eigen::MatrixXd(Wy.asDiagonal());
 
 
 
@@ -297,18 +123,21 @@ int velocity_solver::Compute(const std::vector<double> &q_in, const std::vector<
 	//	cout<<"J\n"<<J<<endl;
 	//	cout<<"J_slack\n"<<J_slack<<endl;
 	//	cout<<"A init\n"<<A<<endl;
-	A.block(0,0,n_of_output,n_of_joints)=J;
-	A.block(0,n_of_joints,n_of_output,n_of_slack)=J_slack;
-	/*	cout<<"A=[J|J_slack]\n"<<A<<endl;
-		cout<<"lbA\n"<<lbA<<endl;
-		cout<<"ubA\n"<<ubA<<endl;
-		cout<<"H\n"<<H<<endl;
-		cout<<"nWSR\n"<<nWSR<<endl;
-		cout<<"cputime\n"<<cputime<<endl;*/
+	//cout<<"time_present \t"<<time_present<<endl;
+	//cout<<"time \t"<<time<<endl;
+	//cout<<"A=[J|J_slack]\n"<<A<<endl;
+	//cout<<"lbA\n"<<lbA<<endl;
+	//cout<<"ubA\n"<<ubA<<endl;
+	//cout<<"Wy\n"<<Wy.transpose()<<endl;
+	//cout<<"H\n"<<H<<endl;
+	//cout<<"nWSR\n"<<nWSR<<endl;
+	//cout<<"cputime\n"<<cputime<<endl;
+
+
 	int _nWSR=nWSR;
 	double _cputime=cputime;
 	//call QP
-	int ret;
+
 	if (firsttime) {
 		ret=QP.init (H.data(), g.data(), A.data(),
 				lb.data(), ub.data(), lbA.data(), ubA.data(),

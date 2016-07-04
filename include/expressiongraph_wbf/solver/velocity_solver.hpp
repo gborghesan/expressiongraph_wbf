@@ -14,15 +14,6 @@ namespace wbf {
 class velocity_solver{
 private:
 
-	std::vector<int> joint_indexes_for_output;
-	std::vector<int> joint_indexes_input_scalar;
-	std::vector<int> joint_indexes_input_rotation;
-	int time_index;
-	unsigned int n_of_joints;
-	unsigned int n_of_slack;
-	unsigned int n_of_variables;
-	unsigned int n_of_output;
-	c_map_type c_map;
 
 	int    nWSR    ;
 	double cputime ;
@@ -38,47 +29,44 @@ private:
 	Eigen::VectorXd     solution;           ///< results from the optimalisation: joint and feature velocities, slack variables
 
 
-	Eigen::MatrixXd J1,J3,J6,J,J_slack;
+	Eigen::MatrixXd J,J_slack;
 
-	Eigen::VectorXd ydotlb1,ydotlb3,ydotlb6;
-	Eigen::VectorXd ydotub1,ydotub3,ydotub6;
-	Eigen::VectorXd Wqdiag;
+	constraints::Ptr cnstr;
+	std::vector<unsigned int> constraintsPerPriority;
+	std::vector<unsigned int> constraintsPerPriorityCheck;
+	std::vector<Eigen::MatrixXd> JPerPriority;
+	std::vector<Eigen::VectorXd> LBPerPriority;
+	std::vector<Eigen::VectorXd> UBPerPriority;
+	std::vector<Eigen::VectorXd> WyPerPriority;
 
+	Eigen::VectorXd Wq;
+	Eigen::VectorXd Wy;
+
+	int n_of_output;
+	int n_of_slack;
+	int n_of_joints;
+int n_of_variables;
 	qpOASES::SQProblem  QP;                 ///< QP Solver
 
 	bool prepared;
 	bool firsttime;
 	int Compute(const std::vector<double> &q_in, const std::vector<Rotation> &R_in, double time,
 			Eigen::VectorXd &qdot_out,bool time_present);
-public:
-	velocity_solver(
-			std::vector<int> _joint_indexes_for_output,
-			std::vector<int> _joint_indexes_input_scalar,
-			std::vector<int> _joint_indexes_input_rotation,
-			const int time_index=-1,
-			double max_cpu_time=0.01,
-			double regularization_factor=0.001,
-			int nWSR=100);
-	velocity_solver(
-			const std::vector<int>& joint_indexes,
-			const int time_index=-1,
-			double max_cpu_time=0.01,
-			double regularization_factor=0.001,
-			int nWSR=100);
 	velocity_solver();
 
-	void setJointIndex(const std::vector<int>&indx);
-	void setJointIndex(const std::vector<int>&indx_out,
-			const std::vector<int>&indx_scalar,
-			const std::vector<int>&indx_rot);
-	void setTimeIndex(const int);
+public:
+	velocity_solver(
+			constraints::Ptr _cnstr,
+			double max_cpu_time=0.01,
+			double _regularization_factor=0.001,
+			int _nWSR=100){
+		cnstr=_cnstr;
+		nWSR =_nWSR   ;
+		cputime=max_cpu_time ;
+		regularization_factor=_regularization_factor;
+	}
 
-	void setQweights(const Eigen::VectorXd& Wqdiag);
-	bool addConstraint(const std::string& name,
-			const constraint &c);
-	bool addConstraint(const std::string& name,
-			const constraint::Ptr &c);
-	bool RemoveConstraint(const std::string &s);
+
 	int Prepare();
 	int Compute(const std::vector<double> &q_in, double time,
 			Eigen::VectorXd &qdot_out);
@@ -92,8 +80,8 @@ public:
 			Eigen::VectorXd &qdot_out);
 
 	//memory assignment copy...
-	Eigen::VectorXd getLastDesiredLBvel(){return lbA;};
-	Eigen::VectorXd getLastDesiredUBvel(){return ubA;};
+	Eigen::VectorXd getLastDesiredLBvel(){return lbA;}
+	Eigen::VectorXd getLastDesiredUBvel(){return ubA;}
 	typedef boost::shared_ptr<velocity_solver> Ptr;
 };
 }

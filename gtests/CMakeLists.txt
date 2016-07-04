@@ -8,5 +8,5 @@ target_link_libraries(controllerAndSpaceDescriptionTests ${catkin_LIBRARIES} ${P
 #catkin_add_gtest(forceSolverTests forceSolverTests.cpp)
 #target_link_libraries(forceSolverTests ${catkin_LIBRARIES} ${PROJECT_NAME})
 
-#catkin_add_gtest(qpOasesVelocitySolverTests qpOasesVelocitySolverTests.cpp)
-#target_link_libraries(qpOasesVelocitySolverTests ${catkin_LIBRARIES} ${PROJECT_NAME})
+catkin_add_gtest(qpOasesVelocitySolverTests qpOasesVelocitySolverTests.cpp)
+target_link_libraries(qpOasesVelocitySolverTests ${catkin_LIBRARIES} ${PROJECT_NAME})

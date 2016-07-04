@@ -24,7 +24,7 @@ add_library(${PROJECT_NAME}
   src/solver/constraints.cpp
   src/solver/space_description.cpp
   src/solver/simple_force_solver.cpp
- # src/solver/velocity_solver.cpp
+  src/solver/velocity_solver.cpp
   src/utils/matlab_reporter.cpp
   src/controllers/scalar_controllers.cpp
   src/controllers/rotation_controllers.cpp

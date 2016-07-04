@@ -12,3 +12,4 @@ tests/CMakeFiles/*
 tests/Makefile
 tests/cmake_install.cmake
 gtest/*
+*.txt.user
