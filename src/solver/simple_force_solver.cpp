@@ -15,9 +15,7 @@ int simple_force_solver::Prepare(){
 	n_of_joints=0;
 
 	if(!cnstr->getPriorityCardinality(constraintsPerPriority)) return -1;
-	for (int i=0;i<constraintsPerPriority.size();i++){
-		cout<<"START1constraintsPerPriority["<<i<<"]: "<<constraintsPerPriority[i]<<endl;
-	}
+
 
 	if(!cnstr->getQweights(Wq)) return -1;
 	JPerPriority.resize(constraintsPerPriority.size());
@@ -34,9 +32,7 @@ int simple_force_solver::Prepare(){
 	J.resize(n_of_output,n_of_joints);
 	Jt.resize(n_of_joints,n_of_output);
 	lambda_des.resize(n_of_output);
-	for (int i=0;i<constraintsPerPriority.size();i++){
-		cout<<"END1constraintsPerPriority["<<i<<"]: "<<constraintsPerPriority[i]<<endl;
-	}
+
 
 	prepared=true;
 	return 1;//ok
@@ -52,7 +48,7 @@ int simple_force_solver::Compute(
 {
 	if (!prepared)
 	{
-		cout<<"not prepared"<<endl;
+//		cout<<"not prepared"<<endl;
 		return -1;
 	}
 	if (tau_out.size()!=n_of_joints) return -13;
@@ -60,10 +56,8 @@ int simple_force_solver::Compute(
 	if (constraintsPerPriorityCheck!=constraintsPerPriority)
 		return -14;
 	int ret;
-	for (int i=0;i<constraintsPerPriority.size();i++){
-		cout<<"BEFOREconstraintsPerPriority["<<i<<"]: "<<constraintsPerPriority[i]<<endl;
-	}
-		ret=cnstr->computeJacobianAndBounds(q_in,R_in,time,time_present);
+
+	ret=cnstr->computeJacobianAndBounds(q_in,R_in,time,time_present);
 	if (ret!=0) return ret;
 	cnstr->getJacobian(JPerPriority);
 	cnstr->getLowerBounds(LBPerPriority);
@@ -71,7 +65,6 @@ int simple_force_solver::Compute(
 
 	int starting_index=0;
 	for (int i=0;i<constraintsPerPriority.size();i++){
-		cout<<"constraintsPerPriority["<<i<<"]: "<<constraintsPerPriority[i]<<endl;
 		int nCostraint=constraintsPerPriority[i];
 		if(nCostraint!=0){
 			J.block(0,starting_index,nCostraint,n_of_joints)=JPerPriority[i];
@@ -80,8 +73,7 @@ int simple_force_solver::Compute(
 		}
 	}
 
-	cout<<"J total\n"<<J<<endl;
-	cout<<"lambda_des total\n"<<lambda_des.transpose()<<endl;
+
 	Jt=J.transpose();
 	tau_out=Jt*lambda_des;
 
