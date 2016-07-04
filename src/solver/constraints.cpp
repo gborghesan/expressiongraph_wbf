@@ -69,8 +69,9 @@ bool constraints::RemoveConstraint(const string &name){
 			prepared=false;
 			return true;
 		}
-		return false;
+
 	}
+	return false;
 }
 
 void constraints::Prepare(){
@@ -154,7 +155,10 @@ int constraints::computeJacobianAndBounds(
 			it->second->space->update_expressions_rot(R_in,joint_indexes_input_rotation);
 			it->second->weight->setInputValues(joint_indexes_input_rotation,R_in);
 
-			if(timeIndex>-1&&time_present)
+			if(timeIndex<0&&time_present)
+				return -9;
+
+			if(time_present)
 			{
 				it->second->ctrl->update_time(time,timeIndex);
 				it->second->ctrl_lower->update_time(time,timeIndex);
@@ -270,7 +274,7 @@ void constraints::checkJointIndex(){
 	if (Wqdiag.size()!=0 ){
 		if( Wqdiag.size()!=joint_indexes_for_output.size())
 			throw 	jointWeightException();
-		if( Wqdiag.minCoeff() > 0.0)
+		if( Wqdiag.minCoeff() < 0.0)
 			throw 	jointWeightException();}
 	else
 		Wqdiag=Eigen::VectorXd::Constant(joint_indexes_for_output.size(),1.0);
