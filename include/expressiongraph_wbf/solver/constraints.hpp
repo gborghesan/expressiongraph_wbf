@@ -135,6 +135,42 @@ private:
 
 public:
 	constraints(){timeIndex=-1;prepared=false;}
+	/** constructor for systems with  scalar joints and controllable rotations _e.g._free floating bases.
+	 *
+	 * In this case, we have to give 3 vectors of indexes that are __not__ independent.
+	 * @param joint_indexes_for_output indexes used in computing the jacobian and the output,
+	 * it mixes torques compute for scalar inputs
+	 *  and wrenches computes for rotational inputs.
+	 * @param joint_indexes_input_scalar indexes that are used for declaring the scalar inputs,
+	 * @param joint_indexes_input_rotation indexes that are used for declaring the rotational inputs.
+	 * @param time_index index of time, if set to -1, no expression is derived or update w.r.t. time.
+	 *
+	 *  __Rotations occupies 3 slots!__
+	 *   ###Example: controllable pose:
+	 *   If the controllable frame is
+	 *   @code
+	 *   KDL::Expression<KDL::Frame>::Ptr w_T_ee  = frame( inputRot(4),
+	 *	 			KDL::vector(input(1),input(2),input(3)));
+	 *	 @endcode
+	*	Then, we will use the following indices:
+		@code
+			joint_indexes_out[0]=1; //force x
+			joint_indexes_out[1]=2; //force y
+			joint_indexes_out[2]=3; //force z
+			joint_indexes_out[3]=4; //wrench x (same index of rotation)
+			joint_indexes_out[4]=5; //wrench y (same index of rotation+1)
+			joint_indexes_out[5]=6; //wrench z (same index of rotation+2)
+			joint_indexes_scalar[0]=1; //position x
+			joint_indexes_scalar[1]=2; //position y
+			joint_indexes_scalar[2]=3; //position z
+			joint_indexes_rot[0]=4; //rotation
+
+			simple_force_solver(joint_indexes_out,
+								joint_indexes_scalar,
+								joint_indexes_rot));
+		 @endcode
+
+	 */
 	constraints(
 			const std::vector<int>& _joint_indexes_for_output,
 			const std::vector<int>& _joint_indexes_input_scalar,
@@ -205,11 +241,15 @@ public:
 	 * @param Wqdiag
 	 */
 	void setQweights(const Eigen::VectorXd& Wqdiag);
+	bool isPrepared( )const{
+		return prepared;
+	}
 	///@}
 	/** @name  Getter functions
 	 * This function returns true if the object is not prepared
 	 *@{
 	 * */
+
 	bool getQweights( Eigen::VectorXd& _Wqdiag)const{
 		if (!prepared) return false;
 		_Wqdiag=Wqdiag;

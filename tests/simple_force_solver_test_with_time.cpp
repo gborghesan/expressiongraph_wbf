@@ -1,5 +1,7 @@
 #include <expressiongraph_wbf/controllers/scalar_controllers.hpp>
 #include "expressiongraph_wbf/solver/simple_force_solver.hpp"
+#include "expressiongraph_wbf/solver/constraints.hpp"
+
 
 #include <kdl/chain.hpp>
 #include <kdl/chainfksolver.hpp>
@@ -93,16 +95,16 @@ int main()
 	constraint::Ptr c_z(new constraint (space_z,ctrl_z));
 
 
+	constraints::Ptr cnstr(new constraints(joint_indexes));
 
-
-
+	cnstr->addConstraint("pos_x",c_x);
+	cnstr->addConstraint("pos_y",c_y);
+	cnstr->addConstraint("pos_z",c_z);
 
 
 	//build solver, without time derivative support
-	simple_force_solver::Ptr s(new simple_force_solver(joint_indexes,time_index));
-	s->addConstraint("pos_x",c_x);
-	s->addConstraint("pos_y",c_y);
-	s->addConstraint("pos_z",c_z);
+	simple_force_solver::Ptr s(new simple_force_solver(cnstr));
+
 
 	s->Prepare();
 
@@ -127,7 +129,7 @@ int main()
 		cout<<"desired wrench\n" <<wrench.transpose()<<endl;
 
 		tau=JKDL.data.transpose()*wrench;
-		cout<<"expected tau\n" <<tau.transpose()<<endl;
+		cout<<"expected TAU" <<tau.transpose()<<endl;
 
 
 
