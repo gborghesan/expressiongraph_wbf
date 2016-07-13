@@ -39,7 +39,7 @@ int simple_force_solver::Prepare(){
 }
 
 
-int simple_force_solver::Compute(
+bool simple_force_solver::Compute(
 		const std::vector<double> &q_in,
 		const std::vector<KDL::Rotation> &R_in,
 		double time,
@@ -49,16 +49,15 @@ int simple_force_solver::Compute(
 	if (!prepared)
 	{
 //		cout<<"not prepared"<<endl;
-		return -1;
+		return false;
 	}
-	if (tau_out.size()!=n_of_joints) return -13;
-	if (!cnstr->getPriorityCardinality(constraintsPerPriorityCheck)) return -1;
-	if (constraintsPerPriorityCheck!=constraintsPerPriority)
-		return -14;
-	int ret;
+	if (tau_out.size()!=n_of_joints) return false;
+	if (!cnstr->getPriorityCardinality(constraintsPerPriorityCheck)) return false;
+	if (constraintsPerPriorityCheck!=constraintsPerPriority)return false;
+	bool ret;
 
 	ret=cnstr->computeJacobianAndBounds(q_in,R_in,time,time_present);
-	if (ret!=0) return ret;
+	if (!ret) return false;
 	cnstr->getJacobian(JPerPriority);
 	cnstr->getLowerBounds(LBPerPriority);
 	cnstr->getYweights(WyPerPriority);
@@ -78,29 +77,29 @@ int simple_force_solver::Compute(
 	tau_out=Jt*lambda_des;
 
 
-	return 1;
+	return true;
 }
-int simple_force_solver::Compute(const std::vector<double> &q_in, double time,
+bool simple_force_solver::Compute(const std::vector<double> &q_in, double time,
 		Eigen::VectorXd &tau_out)
 {
 	std::vector<KDL::Rotation> R_in;
 	return  Compute(q_in,R_in, time,tau_out,true);
 }
-int simple_force_solver::Compute(const std::vector<double> &q_in,
+bool simple_force_solver::Compute(const std::vector<double> &q_in,
 		Eigen::VectorXd &tau_out)
 {
 	std::vector<KDL::Rotation> R_in;
 	return  Compute(q_in,R_in, 0.0,tau_out,false);
 }
 
-int simple_force_solver::Compute(const std::vector<double> &q_in,
+bool simple_force_solver::Compute(const std::vector<double> &q_in,
 		const std::vector<KDL::Rotation> &R_in,
 		double time,
 		Eigen::VectorXd &tau_out)
 {
 	return  Compute(q_in,R_in, time,tau_out,true);
 }
-int simple_force_solver::Compute(const std::vector<double> &q_in,
+bool simple_force_solver::Compute(const std::vector<double> &q_in,
 		const std::vector<KDL::Rotation> &R_in,
 		Eigen::VectorXd &tau_out)
 {

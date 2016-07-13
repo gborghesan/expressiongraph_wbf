@@ -122,18 +122,18 @@ void constraints::Prepare(){
 	prepared=true;
 }
 
-int constraints::computeJacobianAndBounds(
+bool constraints::computeJacobianAndBounds(
 		const std::vector<double> &q_in,
 		const std::vector<Rotation> &R_in,
 		double time,
 		bool time_present)
 {
 
-	if(!prepared) return -14;
-	if (R_in.size()!=joint_indexes_input_rotation.size()) return -15;
-	if (q_in.size()!=joint_indexes_input_scalar.size()) return -16;
-	if (!prepared) return -11;
-	if ((q_in.size()+R_in.size()*3)!=n_of_joints) return -12;
+	if(!prepared) return false;
+	if (R_in.size()!=joint_indexes_input_rotation.size() ||
+		q_in.size()!=joint_indexes_input_scalar.size() ||
+		(q_in.size()+R_in.size()*3)!=n_of_joints )
+		throw jointInputSizeException();
 
 	std::vector< c_map_type>::iterator vIt;
 	for (vIt=constrainMapPerPriority.begin();vIt!=constrainMapPerPriority.end();vIt++)
@@ -173,11 +173,11 @@ int constraints::computeJacobianAndBounds(
 			switch (it->second->ctrl->output_size()) {
 			case 1:
 				if(!it->second->space->compute_jacobian(J1,joint_indexes_for_output))
-					return -14;
+					throw SizeException();
 				if(!it->second->ctrl->compute_action(y1u))
-					return -15;
+					throw SizeException();
 				if(!it->second->ctrl_lower->compute_action(y1l))
-					return -16;
+					throw SizeException();
 				JacobianPerPriority[currentPriority].row(i)=J1;
 				lowerBoundPerPriority[currentPriority](i)=y1l(0);
 				upperBoundPerPriority[currentPriority](i)=y1u(0);
@@ -186,12 +186,11 @@ int constraints::computeJacobianAndBounds(
 				break;
 			case 3:
 				if(!it->second->space->compute_jacobian(J3,joint_indexes_for_output))
-					return -34;
+					throw SizeException();
 				if(!it->second->ctrl->compute_action(y3u))
-					return -35;
+					throw SizeException();
 				if(!it->second->ctrl_lower->compute_action(y3l))
-					return -36;
-
+					throw SizeException();
 				JacobianPerPriority[currentPriority].block(0,i,3,n_of_joints)=J3;
 				lowerBoundPerPriority[currentPriority].block(i,0,3,1)=y3l;
 				upperBoundPerPriority[currentPriority].block(i,0,3,1)=y3u;
@@ -213,12 +212,12 @@ int constraints::computeJacobianAndBounds(
 				i=i+6;
 				break;*/
 			default:
-				return -100;//size of output not yet implemented
+				throw SizeOfOutputNotImplementedException();//size of output not yet implemented
 				break;
 			}
 		}
 	}
-	return 0;
+	return true;
 }
 
 

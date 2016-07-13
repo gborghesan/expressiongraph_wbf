@@ -84,16 +84,15 @@ int velocity_solver::Compute(const std::vector<double> &q_in, const std::vector<
 		cout<<"not prepared"<<endl;
 		return -1;
 	}
-
 	if (qdot_out.size()!=n_of_joints) return -13;
 
 	if (!cnstr->getPriorityCardinality(constraintsPerPriorityCheck)) return -1;
 	if (constraintsPerPriorityCheck!=constraintsPerPriority)
 		return -14;
-	int ret;
 
-	ret=cnstr->computeJacobianAndBounds(q_in,R_in,time,time_present);
-	if (ret!=0) return ret;
+
+	if (!cnstr->computeJacobianAndBounds(q_in,R_in,time,time_present))
+	 return -4;
 	cnstr->getJacobian(JPerPriority);
 	cnstr->getLowerBounds(LBPerPriority);
 	cnstr->getUpperBounds(UBPerPriority);
@@ -137,7 +136,7 @@ int velocity_solver::Compute(const std::vector<double> &q_in, const std::vector<
 	int _nWSR=nWSR;
 	double _cputime=cputime;
 	//call QP
-
+	int ret;
 	if (firsttime) {
 		ret=QP.init (H.data(), g.data(), A.data(),
 				lb.data(), ub.data(), lbA.data(), ubA.data(),
@@ -159,20 +158,20 @@ int velocity_solver::Compute(const std::vector<double> &q_in, const std::vector<
 
 
 	return 1;
-};
+}
 
 int velocity_solver::Compute(const std::vector<double> &q_in, double time,
 		Eigen::VectorXd &tau_out)
 {
 	std::vector<Rotation> R_in;
 	return  Compute(q_in,R_in, time,tau_out,true);
-};
+}
 int velocity_solver::Compute(const std::vector<double> &q_in,
 		Eigen::VectorXd &tau_out)
 {
 	std::vector<Rotation> R_in;
 	return  Compute(q_in,R_in, 0.0,tau_out,false);
-};
+}
 int velocity_solver::Compute(const std::vector<double> &q_in,
 		const std::vector<Rotation> &R_in,
 		double time,
@@ -180,12 +179,12 @@ int velocity_solver::Compute(const std::vector<double> &q_in,
 {
 
 	return  Compute(q_in,R_in, time,tau_out,true);
-};
+}
 int velocity_solver::Compute(const std::vector<double> &q_in,
 		const std::vector<Rotation> &R_in,
 		Eigen::VectorXd &tau_out)
 {
 
 	return  Compute(q_in,R_in, 0.0,tau_out,false);
-};
+}
 }

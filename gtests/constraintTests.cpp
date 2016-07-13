@@ -90,8 +90,8 @@ TEST(constraintTests, allCostraintsInLevelTwo)
 
 	double currentTime=0;
 	bool timePresent=true;
-	ASSERT_EQ(cnstr->computeJacobianAndBounds(
-			inp,currentTime,timePresent),0);
+	ASSERT_TRUE(cnstr->computeJacobianAndBounds(
+			inp,currentTime,timePresent));
 
 	std::vector<Eigen::MatrixXd> JacobianPerPriority;
 	ASSERT_TRUE(cnstr->getJacobian(JacobianPerPriority));
@@ -216,8 +216,8 @@ TEST(constraintTests, allCostraintsInLevelTwoTimeUsed)
 
 	double currentTime=1;
 	bool timePresent=true;
-	ASSERT_EQ(cnstr->computeJacobianAndBounds(
-			inp,currentTime,timePresent),0);
+	ASSERT_TRUE(cnstr->computeJacobianAndBounds(
+			inp,currentTime,timePresent));
 
 	std::vector<Eigen::MatrixXd> JacobianPerPriority;
 	ASSERT_TRUE(cnstr->getJacobian(JacobianPerPriority));
@@ -266,8 +266,8 @@ TEST(constraintTests, allCostraintsInLevelTwoTimeUsed)
 	ASSERT_EQ(WyPerPriority[2].size(),3);
 	for (currentTime=2;currentTime<10.0;currentTime+=1.0)
 	{
-		ASSERT_EQ(cnstr->computeJacobianAndBounds(
-					  inp,currentTime,timePresent),0);
+		ASSERT_TRUE(cnstr->computeJacobianAndBounds(
+					  inp,currentTime,timePresent));
 		ASSERT_TRUE(cnstr->getYweights(WyPerPriority));
 		ASSERT_NEAR( WyPerPriority[2](0),1*currentTime,0.000001);
 		ASSERT_NEAR( WyPerPriority[2](1),2*currentTime,0.000001);

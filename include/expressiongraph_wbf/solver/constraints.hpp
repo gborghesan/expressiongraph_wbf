@@ -33,6 +33,19 @@ struct jointWeightException : public constraintException{
 	const char * what () const throw (){
 		return "joint weight vector should be the same size of jonit number, and striclty positive";
 	}};
+struct jointInputSizeException : public constraintException{
+	const char * what () const throw (){
+		return "The values given as input to computeJacobianAndBound are not correct.";
+	}};
+struct SizeException : public constraintException{
+	const char * what () const throw (){
+		return "A matrix input size is wrong";
+	}};
+struct SizeOfOutputNotImplementedException : public constraintException{
+	const char * what () const throw (){
+		return "Hardcode the case you need in the compute Jacobian function";
+	}};
+
 
 namespace wbf{
 typedef struct constraint
@@ -282,12 +295,20 @@ public:
 	}
 	///@}
 	void Prepare();
-	int computeJacobianAndBounds(
+	///
+	/// \brief computeJacobianAndBounds
+	/// \param q_in scalar joint values
+	/// \param R_in rotational joint values
+	/// \param time time value
+	/// \param time_present if true, time is used tu update the time input
+	/// \return false if not prepared. other errors returned by exception.
+	///
+	bool computeJacobianAndBounds(
 			const std::vector<double> &q_in,
 			const std::vector<Rotation> &R_in,
 			double time,
 			bool time_present);
-	int computeJacobianAndBounds(
+	bool computeJacobianAndBounds(
 			const std::vector<double> &q_in,
 			double time,
 			bool time_present)

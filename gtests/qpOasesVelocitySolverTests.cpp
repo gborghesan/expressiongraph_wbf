@@ -58,13 +58,13 @@ TEST(qpOasesVelocitySolverTests, basicTest)
 
 	cstr->setQweights(qdot_w);
 	cstr->setTimeIndex(time_index);
-	cout <<"HERE1"<<endl;
+
 	ASSERT_TRUE(cstr->addConstraint("pos_x",c_x));
 	ASSERT_TRUE(cstr->addConstraint("pos_y",c_y));
 	ASSERT_TRUE(cstr->addConstraint("pos_z",c_z));
 
 	velocity_solver::Ptr s(new velocity_solver(cstr));
-	cout <<"HERE2"<<endl;
+
 	ASSERT_EQ(s->Prepare(),1);
 
 	/*
@@ -81,9 +81,9 @@ TEST(qpOasesVelocitySolverTests, basicTest)
 		//cout <<"COMPUTE:"<<s->Compute(q,qdot_out)<<endl;
 		ASSERT_EQ(	s->Compute(inp,i,qdot_out),1);
 		for (unsigned int j=0;j<inp.size();j++)
-			inp[j]=inp[j]+qdot_out(j)*0.01;
+			inp[j]+=qdot_out(j)*0.01;
 		count--;
-	/*	if (count==0)
+/*		if (count==0)
 		{
 			count=1000;
 			cout <<"POSE:"<<origin(w_T_ee)->value()<<endl;
