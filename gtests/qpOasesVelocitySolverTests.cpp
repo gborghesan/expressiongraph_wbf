@@ -64,8 +64,10 @@ TEST(qpOasesVelocitySolverTests, basicTest)
 	ASSERT_TRUE(cstr->addConstraint("pos_z",c_z));
 
 	velocity_solver::Ptr s(new velocity_solver(cstr));
-
-	ASSERT_EQ(s->Prepare(),1);
+	bool prepareDoesNotThrowEx=true;
+	try {s->Prepare(); }
+	catch (const exception&e){prepareDoesNotThrowEx=false;}
+	ASSERT_TRUE(prepareDoesNotThrowEx);
 
 	/*
 	cout <<"ADD CONST:"<<s->addConstraint("pos_x",c_x)<<endl;
@@ -100,7 +102,11 @@ TEST(qpOasesVelocitySolverTests, basicTest)
 
 	ASSERT_TRUE(cstr->RemoveConstraint("pos_z"));
 	scalar_des->setValue(0.3);//value of set-point
-	ASSERT_EQ(s->Prepare(),1);
+
+	try {s->Prepare(); }
+	catch (const exception&e){prepareDoesNotThrowEx=false;}
+	ASSERT_TRUE(prepareDoesNotThrowEx);
+
 	count=1;
 	for (int i=0;i<10001;i++)
 	{

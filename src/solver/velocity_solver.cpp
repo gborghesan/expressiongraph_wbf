@@ -8,7 +8,7 @@ using namespace KDL;
 namespace wbf {
 
 
-int velocity_solver::Prepare(){
+void velocity_solver::Prepare(){
 	prepared=false;
 
 
@@ -16,16 +16,19 @@ int velocity_solver::Prepare(){
 	n_of_output=0;
 	n_of_joints=0;
 
-	if(!cnstr->getPriorityCardinality(constraintsPerPriority)) return -1;
+	if(!cnstr->getPriorityCardinality(constraintsPerPriority) ||
+	   !cnstr->getQweights(Wq))
+		throw constraintsNotPreparedException();
 
 
-	if(!cnstr->getQweights(Wq)) return -1;
-	if(constraintsPerPriority.size()>3) return -2;
+
+	if(constraintsPerPriority.size()>3)
+		throw constraintsNotPreparedException() ;
 	if(constraintsPerPriority[0]!=0){
 
 		for (int i=0; i<constraintsPerPriority.size();i++)
 			cout<<i<<" constraintsPerPriority\t"<<constraintsPerPriority[i]<<endl;
-		return -3;
+		throw constraintsNotPreparedException() ;
 	}
 	JPerPriority.resize(constraintsPerPriority.size());
 	LBPerPriority.resize(constraintsPerPriority.size());
@@ -73,26 +76,24 @@ int velocity_solver::Prepare(){
 	QP.setPrintLevel(qpOASES::PL_NONE);
 	prepared=true;
 	firsttime=true;
-	return 1;//ok
-};
+}
 
-int velocity_solver::Compute(const std::vector<double> &q_in, const std::vector<Rotation> &R_in, double time,
+bool velocity_solver::Compute(const std::vector<double> &q_in, const std::vector<Rotation> &R_in, double time,
 		Eigen::VectorXd &qdot_out,bool time_present){
 
 	if (!prepared)
 	{
 		cout<<"not prepared"<<endl;
-		return -1;
+		return false;
 	}
 	if (qdot_out.size()!=n_of_joints) return -13;
 
-	if (!cnstr->getPriorityCardinality(constraintsPerPriorityCheck)) return -1;
+	if (!cnstr->getPriorityCardinality(constraintsPerPriorityCheck))
+		throw wrongQsizeException();
 	if (constraintsPerPriorityCheck!=constraintsPerPriority)
-		return -14;
-
-
+		throw constraintsNotPreparedException() ;
 	if (!cnstr->computeJacobianAndBounds(q_in,R_in,time,time_present))
-	 return -4;
+		throw constraintsNotPreparedException() ;
 	cnstr->getJacobian(JPerPriority);
 	cnstr->getLowerBounds(LBPerPriority);
 	cnstr->getUpperBounds(UBPerPriority);
@@ -157,22 +158,22 @@ int velocity_solver::Compute(const std::vector<double> &q_in, const std::vector<
 
 
 
-	return 1;
+	return true;
 }
 
-int velocity_solver::Compute(const std::vector<double> &q_in, double time,
+bool velocity_solver::Compute(const std::vector<double> &q_in, double time,
 		Eigen::VectorXd &tau_out)
 {
 	std::vector<Rotation> R_in;
 	return  Compute(q_in,R_in, time,tau_out,true);
 }
-int velocity_solver::Compute(const std::vector<double> &q_in,
+bool velocity_solver::Compute(const std::vector<double> &q_in,
 		Eigen::VectorXd &tau_out)
 {
 	std::vector<Rotation> R_in;
 	return  Compute(q_in,R_in, 0.0,tau_out,false);
 }
-int velocity_solver::Compute(const std::vector<double> &q_in,
+bool velocity_solver::Compute(const std::vector<double> &q_in,
 		const std::vector<Rotation> &R_in,
 		double time,
 		Eigen::VectorXd &tau_out)
@@ -180,7 +181,7 @@ int velocity_solver::Compute(const std::vector<double> &q_in,
 
 	return  Compute(q_in,R_in, time,tau_out,true);
 }
-int velocity_solver::Compute(const std::vector<double> &q_in,
+bool velocity_solver::Compute(const std::vector<double> &q_in,
 		const std::vector<Rotation> &R_in,
 		Eigen::VectorXd &tau_out)
 {

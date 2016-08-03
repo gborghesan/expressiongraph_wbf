@@ -13,3 +13,4 @@ tests/Makefile
 tests/cmake_install.cmake
 gtest/*
 *.txt.user
+/html/
