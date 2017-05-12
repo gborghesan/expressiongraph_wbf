@@ -4,6 +4,28 @@
 #include "expressiongraph_wbf/solver/controller_base.hpp"
 //#include <map>
 
+//#include <boost/lexical_cast.hpp>
+struct forceSolverException : public exception{};
+struct constraintsNotPreparedException : public forceSolverException{
+	const char * what () const throw (){
+		return "The constraint 'prepare' has been called without having been prepared";
+	}};
+struct constraintsSizeLevelsDifferentException : public forceSolverException{
+	const char * what () const throw (){
+		return "there is a mismatch in size between constraints and internal size structure."
+				"proabably, the constraints has been modified and Prepared externally, ";
+	}};
+struct wrongNumberOfPriorityException : public forceSolverException{
+	const char * what () const throw (){
+		return "The constraints must be order in level 1";
+	}};
+struct wrongQsizeException : public forceSolverException{
+	const char * what () const throw (){
+		return "Qout passed to compute has the wrong size";
+	}};
+
+
+
 using namespace wbf;
 using namespace std;
 using namespace KDL;
@@ -45,7 +67,9 @@ private:
 	 * \param time_present is set to true if the time
 	 * 			is used (_e.g._ for feed-forward terms of trajectories)
 	 * \return true if it ok, otherwise TODO exceptions (not yet documented).
-	 * */
+	 *  \sa See also the public \ref ComputeGroupForce "Compute functions"
+
+ * */
 	bool Compute(const std::vector<double> &q_in,
 			const std::vector<KDL::Rotation> &R_in,
 			double time,
@@ -58,19 +82,24 @@ public:
 	simple_force_solver(constraints::Ptr _cnstr){
 		cnstr=_cnstr;
 	}
-	///
-	/// \brief Prepare
-	/// \return 1 if ok TODO put execeptions
-	///
-	int Prepare();
+	/**
+	 * @brief Prepare
+	 * This function must be called each time the costraints are changed, before a compute call
+	 * In case of failiture it will raise an exeception
+	 */
 
-/** @name Public interfaces for computing the force
- *
- * All these functions calls #Compute(const std::vector<double> &q_in, 	const std::vector<KDL::Rotation> &R_in,double time, Eigen::VectorXd &tau_out,bool time_present) .
- * the indexes used for the ordering
- * of the vectors (both input and output) must be the same given to the constructor.
- * @{
- */
+	void Prepare();
+
+	/**  @name  Compute functions
+	 * @anchor ComputeGroupForce
+	 * These functions return true if the solver is not prepared
+	 * \param q_in input values scalar joint
+	 * \param R_in input values rotational joint
+	 * \param time current time value
+	 * \param qdot_out Return value
+	 * \return false if the solver is not prepared. other errors returned by exception.
+	 *@{
+	 * */
 
 	/** Compute for robot whose joints are __scalar__,
 	and some expressions are time dependent.*/

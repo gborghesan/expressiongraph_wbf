@@ -7,17 +7,18 @@ using namespace KDL;
 
 namespace wbf {
 
-int simple_force_solver::Prepare(){
+void simple_force_solver::Prepare(){
 	prepared=false;
 
 	cnstr->Prepare();
 	n_of_output=0;
 	n_of_joints=0;
 
-	if(!cnstr->getPriorityCardinality(constraintsPerPriority)) return -1;
 
+	if(!cnstr->getPriorityCardinality(constraintsPerPriority) ||
+	   !cnstr->getQweights(Wq))
+		throw constraintsNotPreparedException();
 
-	if(!cnstr->getQweights(Wq)) return -1;
 	JPerPriority.resize(constraintsPerPriority.size());
 	LBPerPriority.resize(constraintsPerPriority.size());
 	constraintsPerPriorityCheck.resize(constraintsPerPriority.size());
@@ -35,7 +36,7 @@ int simple_force_solver::Prepare(){
 
 
 	prepared=true;
-	return 1;//ok
+
 }
 
 
@@ -48,16 +49,19 @@ bool simple_force_solver::Compute(
 {
 	if (!prepared)
 	{
-//		cout<<"not prepared"<<endl;
+		//		cout<<"not prepared"<<endl;
 		return false;
 	}
-	if (tau_out.size()!=n_of_joints) return false;
-	if (!cnstr->getPriorityCardinality(constraintsPerPriorityCheck)) return false;
-	if (constraintsPerPriorityCheck!=constraintsPerPriority)return false;
-	bool ret;
+	if (tau_out.size()!=n_of_joints)
+		throw wrongQsizeException();
+	if (!cnstr->getPriorityCardinality(constraintsPerPriorityCheck))
+		throw constraintsNotPreparedException();
+	if (constraintsPerPriorityCheck!=constraintsPerPriority)
+		throw constraintsSizeLevelsDifferentException() ;
 
-	ret=cnstr->computeJacobianAndBounds(q_in,R_in,time,time_present);
-	if (!ret) return false;
+	if (!cnstr->computeJacobianAndBounds(q_in,R_in,time,time_present))
+		throw constraintsNotPreparedException() ;
+
 	cnstr->getJacobian(JPerPriority);
 	cnstr->getLowerBounds(LBPerPriority);
 	cnstr->getYweights(WyPerPriority);
@@ -71,8 +75,6 @@ bool simple_force_solver::Compute(
 			starting_index+=nCostraint;
 		}
 	}
-
-
 	Jt=J.transpose();
 	tau_out=Jt*lambda_des;
 
@@ -80,28 +82,28 @@ bool simple_force_solver::Compute(
 	return true;
 }
 bool simple_force_solver::Compute(const std::vector<double> &q_in, double time,
-		Eigen::VectorXd &tau_out)
+								  Eigen::VectorXd &tau_out)
 {
 	std::vector<KDL::Rotation> R_in;
 	return  Compute(q_in,R_in, time,tau_out,true);
 }
 bool simple_force_solver::Compute(const std::vector<double> &q_in,
-		Eigen::VectorXd &tau_out)
+								  Eigen::VectorXd &tau_out)
 {
 	std::vector<KDL::Rotation> R_in;
 	return  Compute(q_in,R_in, 0.0,tau_out,false);
 }
 
 bool simple_force_solver::Compute(const std::vector<double> &q_in,
-		const std::vector<KDL::Rotation> &R_in,
-		double time,
-		Eigen::VectorXd &tau_out)
+								  const std::vector<KDL::Rotation> &R_in,
+								  double time,
+								  Eigen::VectorXd &tau_out)
 {
 	return  Compute(q_in,R_in, time,tau_out,true);
 }
 bool simple_force_solver::Compute(const std::vector<double> &q_in,
-		const std::vector<KDL::Rotation> &R_in,
-		Eigen::VectorXd &tau_out)
+								  const std::vector<KDL::Rotation> &R_in,
+								  Eigen::VectorXd &tau_out)
 {
 	return  Compute(q_in,R_in, 0.0,tau_out,false);
 }

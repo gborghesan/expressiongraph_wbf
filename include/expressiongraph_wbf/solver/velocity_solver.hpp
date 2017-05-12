@@ -4,6 +4,7 @@
 #include "expressiongraph_wbf/solver/controller_base.hpp"
 
 #include <qpOASES/SQProblem.hpp>
+#include <boost/lexical_cast.hpp>
 //#include <map>
 
 using namespace wbf;
@@ -13,7 +14,12 @@ using namespace KDL;
 struct velocitySolverException : public exception{};
 struct constraintsNotPreparedException : public velocitySolverException{
 	const char * what () const throw (){
-		return "The constraint 'preapare' has been called without having been prepared";
+		return "The constraint 'prepare' has been called without having been prepared";
+	}};
+struct constraintsSizeLevelsDifferentException : public velocitySolverException{
+	const char * what () const throw (){
+		return "there is a mismatch in size between constraints and internal size structure."
+				"proabably, the constraints has been modified and Prepared externally, ";
 	}};
 struct wrongNumberOfPriorityException : public velocitySolverException{
 	const char * what () const throw (){
@@ -23,6 +29,19 @@ struct wrongQsizeException : public velocitySolverException{
 	const char * what () const throw (){
 		return "Qout passed to compute has the wrong size";
 	}};
+
+struct QPoasesRaisedAnErrorException : public velocitySolverException
+{
+  std::string m_msg;
+  ~QPoasesRaisedAnErrorException() throw () {} // Updated
+  QPoasesRaisedAnErrorException(const int& error):
+	  m_msg(std::string("QPoases Returned = ")  +  boost::lexical_cast<std::string>(error)){}
+ virtual const char* what() const throw(){
+	return m_msg.c_str();
+  }
+};
+
+
 
 
 namespace wbf {
@@ -66,26 +85,43 @@ private:
 	///@}
 
 	Eigen::MatrixXd J,J_slack;
-
+///Pointer to te constraints
 	constraints::Ptr cnstr;
+	/** @name  Vectors divided per priority, used to get values from the constraints.
+	 *@{
+	 * */
 	std::vector<unsigned int> constraintsPerPriority;
 	std::vector<unsigned int> constraintsPerPriorityCheck;
 	std::vector<Eigen::MatrixXd> JPerPriority;
 	std::vector<Eigen::VectorXd> LBPerPriority;
 	std::vector<Eigen::VectorXd> UBPerPriority;
 	std::vector<Eigen::VectorXd> WyPerPriority;
-
+	///@}
+	/// Joint weights (diagonal of the matrix)
 	Eigen::VectorXd Wq;
+	/// Constraint weights (diagonal of the matrix, for the 2nd LvL only)
 	Eigen::VectorXd Wy;
 
 	int n_of_output;
 	int n_of_slack;
 	int n_of_joints;
 	int n_of_variables;
-	qpOASES::SQProblem  QP;                 ///< QP Solver
+	///QP Solver
+	qpOASES::SQProblem  QP;
 
 	bool prepared;
 	bool firsttime;
+	/**
+	 * @brief Compute Private function that is used by the public interface  \ref ComputeGroup "compute functions"
+	 * Errors are comunicated by exception
+	 * \param q_in input values scalar joint
+	 * \param R_in input values rotational joint
+	 * \param time current time value
+	 * \param qdot_out Return value
+	 * @param time_present boolean that enalbe the time derivation
+	 * @return true if is prepared
+	 *  \sa See also the public \ref ComputeGroupVelocity "Compute functions"
+	 */
 	bool Compute(const std::vector<double> &q_in, const std::vector<Rotation> &R_in, double time,
 			Eigen::VectorXd &qdot_out,bool time_present);
 	velocity_solver();
@@ -116,8 +152,9 @@ public:
 	 */
 
 	void Prepare();
-	///@}
-	/** @name  Compute functions
+
+	/**  @name  Compute functions
+	 * @anchor ComputeGroupVelocity
 	 * These functions return true if the solver is not prepared
 	 * \param q_in input values scalar joint
 	 * \param R_in input values rotational joint

@@ -83,15 +83,16 @@ bool velocity_solver::Compute(const std::vector<double> &q_in, const std::vector
 
 	if (!prepared)
 	{
-		cout<<"not prepared"<<endl;
+//		cout<<"not prepared"<<endl;
 		return false;
 	}
-	if (qdot_out.size()!=n_of_joints) return -13;
+	if (qdot_out.size()!=n_of_joints)
+		throw wrongQsizeException();
 
 	if (!cnstr->getPriorityCardinality(constraintsPerPriorityCheck))
-		throw wrongQsizeException();
+		throw constraintsNotPreparedException();
 	if (constraintsPerPriorityCheck!=constraintsPerPriority)
-		throw constraintsNotPreparedException() ;
+		throw constraintsSizeLevelsDifferentException() ;
 	if (!cnstr->computeJacobianAndBounds(q_in,R_in,time,time_present))
 		throw constraintsNotPreparedException() ;
 	cnstr->getJacobian(JPerPriority);
@@ -150,7 +151,8 @@ bool velocity_solver::Compute(const std::vector<double> &q_in, const std::vector
 				_nWSR, & _cputime);
 	//	cout<<"hotstart ret\n"<<ret<<endl;
 	}
-	if (ret!=0) return ret;
+	if (ret!=0) throw QPoasesRaisedAnErrorException(ret);
+
 
 	ret = QP.getPrimalSolution(solution.data());
 	//cout<<"solution res\n"<<solution.transpose()<<endl;
